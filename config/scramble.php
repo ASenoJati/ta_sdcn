@@ -133,4 +133,9 @@ return [
     ],
 
     'extensions' => [],
+
+    'auth' => [
+        'enabled' => true,
+        'default' => 'bearer',
+    ],
 ];

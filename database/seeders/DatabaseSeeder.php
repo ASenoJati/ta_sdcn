@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AttendanceTimeSettingSeeder::class,
             RoleAttendanceTimeSeeder::class,
             LocationSeeder::class,
+            TeachingJournalSeeder::class,
         ]);
     }
 }
