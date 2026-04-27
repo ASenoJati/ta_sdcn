@@ -54,4 +54,18 @@ class AuthController extends Controller
             'role' => $user->getRoleNames()->first()
         ]);
     }
+
+    /**
+     * Logout User (Revoke Token)
+     */
+    public function logout(Request $request)
+    {
+        // Menghapus token yang sedang digunakan untuk request ini
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil logout, token telah dihapus.'
+        ]);
+    }
 }
