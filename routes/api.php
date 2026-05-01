@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\AttendanceSettingController;
 use App\Http\Controllers\Api\Admin\LocationController;
 use App\Http\Controllers\Api\Admin\RoleAttendanceController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\JournalController;
 use App\Http\Controllers\Api\ProfileController;
@@ -16,6 +17,16 @@ Route::post('/auth/google', [AuthController::class, 'handleGoogleCallback']);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Check-in
+    Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn']);
+
+    // Check-out
+    Route::post('/attendance/check-out', [AttendanceController::class, 'checkout']);
+
+    // History Absensi (Index)
+    Route::get('/attendance/history', [AttendanceController::class, 'index']);
 
     // Khusus Admin
     Route::middleware('role:admin')->group(function () {
@@ -40,6 +51,4 @@ Route::middleware('auth:sanctum')->group(function () {
         // 2. Simpan Refleksi (Endpoint Terpisah)
         Route::put('/journals/{id}/reflection', [JournalController::class, 'storeReflection']);
     });
-
-    Route::post('/logout', [AuthController::class, 'logout']);
 });
