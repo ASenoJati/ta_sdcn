@@ -15,6 +15,30 @@ class AttendanceController extends Controller
 {
     use GeoLocationTrait;
 
+    /**
+     * Menampilkan History Absensi User
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        // Ambil bulan dan tahun dari request (default ke bulan/tahun sekarang)
+        $month = $request->query('month', now()->month);
+        $year = $request->query('year', now()->year);
+
+        $history = UserAttendance::where('user_id', $user->id)
+            ->whereMonth('attendance_date', $month)
+            ->whereYear('attendance_date', $year)
+            ->orderBy('attendance_date', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => "History absensi bulan $month tahun $year",
+            'data' => $history
+        ]);
+    }
+
     public function checkIn(Request $request)
     {
         $request->validate([
