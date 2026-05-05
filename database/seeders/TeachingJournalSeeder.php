@@ -24,14 +24,22 @@ class TeachingJournalSeeder extends Seeder
 
         // 2. Buat User Teacher dengan role_id (sesuai skema table users Anda)
         $teacher = User::create([
-            'name'     => 'Budi Pratama, S.Pd',
-            'email'    => 'teacher@sekolah1.com',
+            'name'     => 'Fawwaz Labib',
+            'email'    => 'fawwazlabib29@gmail.com',
             'password' => Hash::make('password123'),
-            'role_id'  => $teacherRole->id, // Mengisi field role_id di tabel users
+            'role_id'  => $teacherRole->id,
+        ]);
+
+        $teacher2 = User::create([
+            'name'     => 'Abyu Pandega',
+            'email'    => 'abyupandega@gmail.com',
+            'password' => Hash::make('password123'),
+            'role_id'  => $teacherRole->id,
         ]);
 
         // Berikan role secara Spatie (mengisi tabel model_has_roles)
         $teacher->assignRole($teacherRole);
+        $teacher2->assignRole($teacherRole);
 
         // 2. Buat Mata Pelajaran
         $subject1 = Subject::create(['name' => 'Bahasa Indonesia']);
@@ -74,6 +82,26 @@ class TeachingJournalSeeder extends Seeder
         // Jadwal Sesi 2
         TeachingSchedule::create([
             'user_id' => $teacher->id,
+            'subject_id' => $subject2->id,
+            'classroom_id' => $class2->id,
+            'day' => $today,
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00',
+        ]);
+
+        // Jadwal Sesi 3
+        TeachingSchedule::create([
+            'user_id' => $teacher2->id,
+            'subject_id' => $subject1->id,
+            'classroom_id' => $class1->id,
+            'day' => $today,
+            'start_time' => '08:00:00',
+            'end_time' => '09:30:00',
+        ]);
+
+        // Jadwal Sesi 4
+        TeachingSchedule::create([
+            'user_id' => $teacher2->id,
             'subject_id' => $subject2->id,
             'classroom_id' => $class2->id,
             'day' => $today,
