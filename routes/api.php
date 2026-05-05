@@ -21,10 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Check-in
     Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn']);
-
     // Check-out
     Route::post('/attendance/check-out', [AttendanceController::class, 'checkout']);
-
     // History Absensi (Index)
     Route::get('/attendance/history', [AttendanceController::class, 'index']);
 

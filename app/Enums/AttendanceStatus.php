@@ -11,7 +11,6 @@ enum AttendanceStatus: string
     case OVERTIME = 'overtime';
     case OUT_OF_RANGE = 'out_of_range';
 
-    // Method untuk mendapatkan label yang rapi (untuk UI)
     public function label(): string
     {
         return match ($this) {
