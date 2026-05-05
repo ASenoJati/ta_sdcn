@@ -18,95 +18,84 @@ class TeachingJournalSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Ambil atau Buat Role (Pastikan guard_name sesuai)
+        // 1. Ambil atau Buat Role
         $teacherRole = Role::where('name', 'teacher')->first()
             ?? Role::create(['name' => 'teacher', 'guard_name' => 'api']);
 
-        // 2. Buat User Teacher dengan role_id (sesuai skema table users Anda)
-        $teacher = User::create([
-            'name'     => 'Fawwaz Labib',
-            'email'    => 'fawwazlabib29@gmail.com',
-            'password' => Hash::make('password123'),
-            'role_id'  => $teacherRole->id,
-        ]);
+        // 2. Data Guru
+        $teachersData = [
+            [
+                'name' => 'Fawwaz Labib',
+                'email' => 'fawwazlabib29@gmail.com',
+                'subject' => 'Bahasa Indonesia'
+            ],
+            [
+                'name' => 'Abyu Pandega',
+                'email' => 'abyupandega@gmail.com',
+                'subject' => 'Matematika'
+            ],
+            [
+                'name' => 'Seno Jati',
+                'email' => 'senojati16@gmail.com',
+                'subject' => 'Bahasa Inggris'
+            ],
+        ];
 
-        $teacher2 = User::create([
-            'name'     => 'Abyu Pandega',
-            'email'    => 'abyupandega@gmail.com',
-            'password' => Hash::make('password123'),
-            'role_id'  => $teacherRole->id,
-        ]);
+        // 3. Buat Kelas (Contoh)
+        $class1 = Classroom::firstOrCreate(['name' => 'Kelas X - MIPA 1']);
+        $class2 = Classroom::firstOrCreate(['name' => 'Kelas XI - IPS 2']);
 
-        // Berikan role secara Spatie (mengisi tabel model_has_roles)
-        $teacher->assignRole($teacherRole);
-        $teacher2->assignRole($teacherRole);
+        $today = now()->format('l');
 
-        // 2. Buat Mata Pelajaran
-        $subject1 = Subject::create(['name' => 'Bahasa Indonesia']);
-        $subject2 = Subject::create(['name' => 'Matematika']);
+        // 4. Proses Pembuatan User, Role, dan Jadwal
+        foreach ($teachersData as $index => $data) {
+            // Create Teacher
+            $teacher = User::create([
+                'name'     => $data['name'],
+                'email'    => $data['email'],
+                'password' => Hash::make('password123'),
+                'role_id'  => $teacherRole->id,
+            ]);
 
-        // 3. Buat Kelas
-        $class1 = Classroom::create(['name' => 'Kelas X - MIPA 1']);
-        $class2 = Classroom::create(['name' => 'Kelas XI - IPS 2']);
+            $teacher->assignRole($teacherRole);
 
-        // 4. Buat Siswa untuk Kelas X - MIPA 1
+            // Create Subject
+            $subject = Subject::firstOrCreate(['name' => $data['subject']]);
+
+            // 5. Buat Jadwal Mengajar (Setiap guru punya 2 sesi di hari yang sama)
+            // Sesi 1
+            TeachingSchedule::create([
+                'user_id'      => $teacher->id,
+                'subject_id'   => $subject->id,
+                'classroom_id' => $class1->id,
+                'day'          => $today,
+                'start_time'   => '07:30:00',
+                'end_time'     => '09:00:00',
+            ]);
+
+            // Sesi 2
+            TeachingSchedule::create([
+                'user_id'      => $teacher->id,
+                'subject_id'   => $subject->id,
+                'classroom_id' => $class2->id,
+                'day'          => $today,
+                'start_time'   => '09:30:00',
+                'end_time'     => '11:00:00',
+            ]);
+        }
+
+        // 6. Buat Siswa Sample untuk Kelas 1 (Hanya sekali)
         $students = [
             ['name' => 'Aditya Pratama', 'nis' => '21001'],
             ['name' => 'Bunga Citra Lestari', 'nis' => '21002'],
             ['name' => 'Dimas Anggara', 'nis' => '21003'],
-            ['name' => 'Eka Wijaya', 'nis' => '21004'],
-            ['name' => 'Fahri Ramadhan', 'nis' => '21005'],
         ];
 
-        foreach ($students as $student) {
-            Student::create([
-                'classroom_id' => $class1->id,
-                'name' => $student['name'],
-                'nis' => $student['nis'],
-            ]);
+        foreach ($students as $s) {
+            Student::firstOrCreate(
+                ['nis' => $s['nis']],
+                ['name' => $s['name'], 'classroom_id' => $class1->id]
+            );
         }
-
-        // 5. Buat Jadwal Mengajar Guru Hari Ini (Sesuai Gambar 1)
-        $today = now()->format('l'); // Mendapatkan nama hari ini (e.g., Monday)
-
-        // Jadwal Sesi 1
-        TeachingSchedule::create([
-            'user_id' => $teacher->id,
-            'subject_id' => $subject1->id,
-            'classroom_id' => $class1->id,
-            'day' => $today,
-            'start_time' => '08:00:00',
-            'end_time' => '09:30:00',
-        ]);
-
-        // Jadwal Sesi 2
-        TeachingSchedule::create([
-            'user_id' => $teacher->id,
-            'subject_id' => $subject2->id,
-            'classroom_id' => $class2->id,
-            'day' => $today,
-            'start_time' => '10:00:00',
-            'end_time' => '11:30:00',
-        ]);
-
-        // Jadwal Sesi 3
-        TeachingSchedule::create([
-            'user_id' => $teacher2->id,
-            'subject_id' => $subject1->id,
-            'classroom_id' => $class1->id,
-            'day' => $today,
-            'start_time' => '08:00:00',
-            'end_time' => '09:30:00',
-        ]);
-
-        // Jadwal Sesi 4
-        TeachingSchedule::create([
-            'user_id' => $teacher2->id,
-            'subject_id' => $subject2->id,
-            'classroom_id' => $class2->id,
-            'day' => $today,
-            'start_time' => '10:00:00',
-            'end_time' => '11:30:00',
-        ]);
     }
 }
