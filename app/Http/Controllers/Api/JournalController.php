@@ -70,6 +70,7 @@ class JournalController extends Controller
 
         $today = now()->toDateString();
 
+        // ambil journal hari ini
         $journal = TeachingJournal::where('teaching_schedule_id', $scheduleId)
             ->whereDate('date', $today)
             ->first();
@@ -77,28 +78,29 @@ class JournalController extends Controller
         $students = Student::where('classroom_id', $schedule->classroom_id)->get();
 
         $students = $students->map(function ($s) use ($journal) {
+
             $status = '';
 
             if ($journal) {
-                $att = StudentAttendance::where('teaching_journal_id', $journal->id)
+                $attendance = StudentAttendance::where('teaching_journal_id', $journal->id)
                     ->where('student_id', $s->id)
                     ->first();
 
-                $status = $att->status ?? '';
+                $status = $attendance->status ?? '';
             }
 
             return [
                 'id' => $s->id,
                 'name' => $s->name,
                 'nis' => $s->nis,
-                'status' => $status,
+                'status' => $status, // ✅ INI KUNCI
             ];
         });
 
         return response()->json([
             'success' => true,
-            'journal_id' => $journal->id ?? null,
-            'material' => $journal->material ?? '',
+            'journal_id' => $journal->id ?? null, // ✅
+            'material' => $journal->material ?? '', // ✅
             'data' => $students
         ]);
     }
