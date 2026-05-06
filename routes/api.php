@@ -45,5 +45,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/journals/attendance', [JournalController::class, 'storeAttendance']);
         // 2. Simpan Refleksi (Endpoint Terpisah)
         Route::put('/journals/{id}/reflection', [JournalController::class, 'storeReflection']);
+
+        Route::get('/journals/{schedule_id}/detail', [JournalController::class, 'detail']);
+
+        Route::put('/journals/{id}/update', [JournalController::class, 'update']);
     });
 });
