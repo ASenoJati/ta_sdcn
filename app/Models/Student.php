@@ -12,7 +12,7 @@ class Student extends Model
 
     public function classroom(): BelongsTo
     {
-        return $this->belongsTo(Classroom::class);
+        return $this->belongsTo(Classroom::class, 'classroom_id');
     }
 
     public function attendances(): HasMany

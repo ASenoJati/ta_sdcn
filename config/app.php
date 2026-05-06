@@ -1,5 +1,7 @@
 <?php
 
+use Spatie\Permission\Middleware\RoleMiddleware;
+
 return [
 
     /*
@@ -122,5 +124,7 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    'role' => RoleMiddleware::class,
 
 ];
