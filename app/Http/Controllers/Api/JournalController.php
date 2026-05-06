@@ -67,11 +67,38 @@ class JournalController extends Controller
     public function getStudentsBySchedule($scheduleId)
     {
         $schedule = TeachingSchedule::findOrFail($scheduleId);
+
+        $today = now()->toDateString();
+
+        $journal = TeachingJournal::where('teaching_schedule_id', $scheduleId)
+            ->whereDate('date', $today)
+            ->first();
+
         $students = Student::where('classroom_id', $schedule->classroom_id)->get();
+
+        $students = $students->map(function ($s) use ($journal) {
+            $status = '';
+
+            if ($journal) {
+                $att = StudentAttendance::where('teaching_journal_id', $journal->id)
+                    ->where('student_id', $s->id)
+                    ->first();
+
+                $status = $att->status ?? '';
+            }
+
+            return [
+                'id' => $s->id,
+                'name' => $s->name,
+                'nis' => $s->nis,
+                'status' => $status,
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'classroom' => $schedule->classroom->name,
+            'journal_id' => $journal->id ?? null,
+            'material' => $journal->material ?? '',
             'data' => $students
         ]);
     }
