@@ -67,41 +67,39 @@ class JournalController extends Controller
     public function getStudentsBySchedule($scheduleId)
     {
         $schedule = TeachingSchedule::findOrFail($scheduleId);
-
         $today = now()->toDateString();
 
-        // ambil journal hari ini
+        // 1. Ambil journal hari ini
         $journal = TeachingJournal::where('teaching_schedule_id', $scheduleId)
             ->whereDate('date', $today)
             ->first();
 
+        // 2. Ambil semua siswa di kelas tersebut
         $students = Student::where('classroom_id', $schedule->classroom_id)->get();
 
-        $students = $students->map(function ($s) use ($journal) {
+        // 3. Jika ada journal, ambil semua absensi sekaligus untuk menghindari N+1 query
+        $attendances = [];
+        if ($journal) {
+            $attendances = StudentAttendance::where('teaching_journal_id', $journal->id)
+                ->pluck('status', 'student_id') // Menghasilkan array [student_id => status]
+                ->toArray();
+        }
 
-            $status = '';
-
-            if ($journal) {
-                $attendance = StudentAttendance::where('teaching_journal_id', $journal->id)
-                    ->where('student_id', $s->id)
-                    ->first();
-
-                $status = $attendance->status ?? '';
-            }
-
+        // 4. Map data
+        $data = $students->map(function ($s) use ($attendances) {
             return [
                 'id' => $s->id,
                 'name' => $s->name,
                 'nis' => $s->nis,
-                'status' => $status, // ✅ INI KUNCI
+                'status' => $attendances[$s->id] ?? '', // Ambil dari array attendances
             ];
         });
 
         return response()->json([
             'success' => true,
-            'journal_id' => $journal->id ?? null, // ✅
-            'material' => $journal->material ?? '', // ✅
-            'data' => $students
+            'journal_id' => $journal->id ?? null,
+            'material' => $journal->material ?? '',
+            'data' => $data
         ]);
     }
 
