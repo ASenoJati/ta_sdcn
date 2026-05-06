@@ -41,6 +41,26 @@ class JournalController extends Controller
         ]);
     }
 
+    public function detail($scheduleId)
+    {
+        $today = now()->toDateString();
+
+        $journal = TeachingJournal::with('attendances.student')
+            ->where('teaching_schedule_id', $scheduleId)
+            ->whereDate('date', $today)
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $journal->id,
+                'material' => $journal->material,
+                'reflection' => $journal->reflection,
+                'attendances' => $journal->attendances
+            ]
+        ]);
+    }
+
     /**
      * 2. Ambil List Siswa berdasarkan Jadwal (Gambar 2)
      */
@@ -95,6 +115,35 @@ class JournalController extends Controller
                 'journal_id' => $journal->id
             ]);
         });
+    }
+
+    public function update(Request $request, $id)
+    {
+        $journal = TeachingJournal::findOrFail($id);
+
+        DB::transaction(function () use ($request, $journal) {
+
+            $journal->update([
+                'material' => $request->material
+            ]);
+
+            foreach ($request->attendances as $att) {
+                StudentAttendance::updateOrCreate(
+                    [
+                        'teaching_journal_id' => $journal->id,
+                        'student_id' => $att['student_id']
+                    ],
+                    [
+                        'status' => $att['status']
+                    ]
+                );
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Updated'
+        ]);
     }
 
     /**
