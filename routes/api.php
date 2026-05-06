@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/google', [AuthController::class, 'handleGoogleCallback']);
 
-// Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'show']);
@@ -38,8 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Khusus Teacher
     Route::middleware('role:teacher')->group(function () {
-        // Route::get('/teacher/classes', [TeacherController::class, 'index']);
-
         // List jadwal hari ini
         Route::get('/journals/schedules', [JournalController::class, 'index']);
         // List siswa untuk diabsen
