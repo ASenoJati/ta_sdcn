@@ -70,7 +70,7 @@ class JournalController extends Controller
         $schedule = TeachingSchedule::findOrFail($scheduleId);
 
         // Pastikan timezone sudah benar di config/app.php agar $today akurat
-        $today = now()->toDateString();
+        $today = now('Asia/Jakarta')->toDateString();
 
         // 1. Ambil journal hari ini
         $journal = TeachingJournal::where('teaching_schedule_id', $scheduleId)
