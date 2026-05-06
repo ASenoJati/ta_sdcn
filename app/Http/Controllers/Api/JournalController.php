@@ -17,13 +17,28 @@ class JournalController extends Controller
      */
     public function index(Request $request)
     {
-        $dayName = now()->format('l'); // Mendapatkan hari ini (English)
+        $today = now()->toDateString();
+        $dayName = now()->format('l');
+
         $schedules = TeachingSchedule::with(['subject', 'classroom'])
             ->where('user_id', $request->user()->id)
             ->where('day', $dayName)
-            ->get();
+            ->get()
+            ->map(function ($schedule) use ($today) {
 
-        return response()->json(['success' => true, 'data' => $schedules]);
+                $isDone = TeachingJournal::where('teaching_schedule_id', $schedule->id)
+                    ->whereDate('date', $today)
+                    ->exists();
+
+                $schedule->is_journal_filled = $isDone;
+
+                return $schedule;
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $schedules
+        ]);
     }
 
     /**
@@ -49,7 +64,7 @@ class JournalController extends Controller
     {
         $request->validate([
             'teaching_schedule_id' => 'required|exists:teaching_schedules,id',
-            'material' => 'required|string', // Materi pelajaran (Teks Eksplanasi)
+            'material' => 'required|string',
             'attendances' => 'required|array',
             'attendances.*.student_id' => 'required|exists:students,id',
             'attendances.*.status' => 'required|in:hadir,izin,sakit,alpa',
@@ -61,7 +76,7 @@ class JournalController extends Controller
                 'teaching_schedule_id' => $request->teaching_schedule_id,
                 'date' => now(),
                 'material' => $request->material,
-                'reflection' => null, // Masih kosong
+                'reflection' => null,
             ]);
 
             // 2. Simpan Detail Absensi
