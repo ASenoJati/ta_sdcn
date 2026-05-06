@@ -66,7 +66,10 @@ class JournalController extends Controller
      */
     public function getStudentsBySchedule($scheduleId)
     {
+        // Gunakan with() untuk load classroom sekalian jika butuh data kelasnya nanti
         $schedule = TeachingSchedule::findOrFail($scheduleId);
+
+        // Pastikan timezone sudah benar di config/app.php agar $today akurat
         $today = now()->toDateString();
 
         // 1. Ambil journal hari ini
@@ -75,34 +78,36 @@ class JournalController extends Controller
             ->first();
 
         // 2. Ambil semua siswa di kelas tersebut
-        $students = Student::where('classroom_id', $schedule->classroom_id)->get();
+        $students = Student::where('classroom_id', $schedule->classroom_id)
+            ->orderBy('name', 'asc') // Tambahkan order agar daftar siswa rapi (A-Z)
+            ->get();
 
-        // 3. Jika ada journal, ambil semua absensi sekaligus untuk menghindari N+1 query
+        // 3. Ambil absensi jika jurnal ada
         $attendances = [];
         if ($journal) {
             $attendances = StudentAttendance::where('teaching_journal_id', $journal->id)
-                ->pluck('status', 'student_id') // Menghasilkan array [student_id => status]
+                ->pluck('status', 'student_id')
                 ->toArray();
         }
 
         // 4. Map data
         $data = $students->map(function ($s) use ($attendances) {
             return [
-                'id' => $s->id,
-                'name' => $s->name,
-                'nis' => $s->nis,
-                'status' => $attendances[$s->id] ?? '', // Ambil dari array attendances
+                'id'     => $s->id,
+                'name'   => $s->name,
+                'nis'    => $s->nis,
+                // Jika student_id tidak ada di array attendances, default ke string kosong
+                'status' => $attendances[$s->id] ?? '',
             ];
         });
 
         return response()->json([
-            'success' => true,
-            'journal_id' => $journal->id ?? null,
-            'material' => $journal->material ?? '',
-            'data' => $data
+            'success'    => true,
+            'journal_id' => $journal ? $journal->id : null,
+            'material'   => $journal ? $journal->material : '',
+            'data'       => $data
         ]);
     }
-
     /**
      * TAHAP 1: Simpan Presensi Siswa
      * Setelah klik "Simpan Presensi" di Gambar 2
