@@ -39,7 +39,7 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0">
                                 <img
-                                    src="./assets/img/user1-128x128.jpg"
+                                    src="{{ asset('assets/img/user1-128x128.jpg') }}"
                                     alt="User Avatar"
                                     class="img-size-50 rounded-circle me-3" />
                             </div>
@@ -62,7 +62,7 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0">
                                 <img
-                                    src="./assets/img/user8-128x128.jpg"
+                                    src="{{ asset('assets/img/user8-128x128.jpg') }}"
                                     alt="User Avatar"
                                     class="img-size-50 rounded-circle me-3" />
                             </div>
@@ -87,7 +87,7 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0">
                                 <img
-                                    src="./assets/img/user3-128x128.jpg"
+                                    src="{{ asset('assets/img/user3-128x128.jpg') }}"
                                     alt="User Avatar"
                                     class="img-size-50 rounded-circle me-3" />
                             </div>
@@ -154,7 +154,7 @@
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img
-                        src="./assets/img/user2-160x160.jpg"
+                        src="{{ asset('assets/img/user2-160x160.jpg') }}"
                         class="user-image rounded-circle shadow"
                         alt="User Image" />
                     <span class="d-none d-md-inline">Alexander Pierce</span>
@@ -163,7 +163,7 @@
                     <!--begin::User Image-->
                     <li class="user-header text-bg-primary">
                         <img
-                            src="./assets/img/user2-160x160.jpg"
+                            src="{{ asset('assets/img/user2-160x160.jpg') }}"
                             class="rounded-circle shadow"
                             alt="User Image" />
                         <p>
