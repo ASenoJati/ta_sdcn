@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Web\Admin\AttendanceTimeSettingController;
 use App\Http\Controllers\Web\Admin\ClassroomController;
 use App\Http\Controllers\Web\Admin\DashboardController;
 use App\Http\Controllers\Web\Admin\LocationsController;
+use App\Http\Controllers\Web\Admin\RoleAttendanceTimeController;
 use App\Http\Controllers\Web\Admin\StudentsController;
 use App\Http\Controllers\Web\Admin\UsersController;
 use App\Http\Controllers\Web\AuthController;
@@ -26,6 +28,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/classrooms', ClassroomController::class);
         Route::resource('/user', UsersController::class);
         Route::resource('/location', LocationsController::class);
+        Route::resource('/role-attendance-times', RoleAttendanceTimeController::class);
+        Route::resource('/attendance-setting', AttendanceTimeSettingController::class);
 
         Route::get('students-data', [StudentsController::class, 'getData'])->name('students.data');
         Route::get('classrooms-data', [ClassroomController::class, 'getData'])->name('classrooms.data');
@@ -35,6 +39,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('location-data', [LocationsController::class, 'getData'])->name('location.data');
         Route::post('location/{id}/set-default', [LocationsController::class, 'setDefault'])->name('location.set-default');
         Route::get('location-default', [LocationsController::class, 'getDefault'])->name('location.default');
+        Route::get('role-attendance-times-data', [RoleAttendanceTimeController::class, 'getData'])->name('role-attendance-times.data');
+        Route::get('attendance-settings-data', [AttendanceTimeSettingController::class, 'getData'])->name('attendance-settings.data');
+        Route::get('attendance-settings-list', [AttendanceTimeSettingController::class, 'getList'])->name('attendance-settings.list');
     });
 
     // Route Khusus Teacher
