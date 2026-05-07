@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\Admin\ClassroomController;
 use App\Http\Controllers\Web\Admin\DashboardController;
 use App\Http\Controllers\Web\Admin\StudentsController;
+use App\Http\Controllers\Web\Admin\UsersController;
 use App\Http\Controllers\Web\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,10 +23,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::resource('/students', StudentsController::class);
         Route::resource('/classrooms', ClassroomController::class);
+        Route::resource('/user', UsersController::class);
 
         Route::get('students-data', [StudentsController::class, 'getData'])->name('students.data');
         Route::get('classrooms-data', [ClassroomController::class, 'getData'])->name('classrooms.data');
         Route::get('classrooms-list', [ClassroomController::class, 'getList'])->name('classrooms.list');
+        Route::get('user-data', [UsersController::class, 'getData'])->name('user.data');
+        Route::get('user-roles', [UsersController::class, 'getRoles'])->name('user.roles');
     });
 
     // Route Khusus Teacher

@@ -51,7 +51,7 @@
 
                 <li class="nav-header">USER</li>
                 <li class="nav-item">
-                    <a href="" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <a href="{{ route('user.index') }}" class="nav-link {{ request()->routeIs('user.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-person"></i>
                         <p>Data User</p>
                     </a>
