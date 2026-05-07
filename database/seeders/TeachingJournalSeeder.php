@@ -20,7 +20,7 @@ class TeachingJournalSeeder extends Seeder
     {
         // 1. Inisialisasi Role
         $teacherRole = Role::where('name', 'teacher')->first()
-            ?? Role::create(['name' => 'teacher', 'guard_name' => 'api']);
+            ?? Role::create(['name' => 'teacher', 'guard_name' => 'web']);
 
         // 2. Data Guru & Mata Pelajaran Utama
         $teachersData = [

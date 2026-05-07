@@ -16,9 +16,9 @@ class UserRoleSeeder extends Seeder
     public function run(): void
     {
         // 1. Buat Role ke tabel roles (Spatie)
-        $adminRole   = Role::create(['name' => 'admin', 'guard_name' => 'api']);
-        $teacherRole = Role::create(['name' => 'teacher', 'guard_name' => 'api']);
-        $staffRole   = Role::create(['name' => 'staff', 'guard_name' => 'api']);
+        $adminRole   = Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        $teacherRole = Role::create(['name' => 'teacher', 'guard_name' => 'web']);
+        $staffRole   = Role::create(['name' => 'staff', 'guard_name' => 'web']);
 
         // 2. Buat User Admin
         $admin = User::create([
