@@ -16,29 +16,33 @@ class TeachingSchedule extends Model
         'subject_id',
         'classroom_id',
         'day',
-        'start_time',
-        'end_time',
+        'lesson_hour_id'
     ];
 
-    /**
-     * Relasi ke Model Subject (Mata Pelajaran)
-     */
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
+    public static $days = [
+        'Monday' => 'Senin',
+        'Tuesday' => 'Selasa',
+        'Wednesday' => 'Rabu',
+        'Thursday' => 'Kamis',
+        'Friday' => 'Jumat',
+        'Saturday' => 'Sabtu'
+    ];
+
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
-    /**
-     * Relasi ke Model Classroom (Kelas)
-     */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
-    /**
-     * Relasi ke Model User (Guru)
-     */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -47,5 +51,31 @@ class TeachingSchedule extends Model
     public function journals(): HasMany
     {
         return $this->hasMany(TeachingJournal::class);
+    }
+
+    public function lessonHour(): BelongsTo
+    {
+        return $this->belongsTo(LessonHour::class);
+    }
+
+    public function getDayIndonesianAttribute()
+    {
+        return self::$days[$this->day] ?? $this->day;
+    }
+
+    /**
+     * Get formatted schedule info.
+     */
+    public function getScheduleInfoAttribute()
+    {
+        return $this->subject->name . ' - ' . $this->classroom->name . ' (' . $this->dayIndonesian . ')';
+    }
+
+    /**
+     * Get formatted created date.
+     */
+    public function getCreatedAtFormattedAttribute()
+    {
+        return $this->created_at->format('d/m/Y H:i');
     }
 }

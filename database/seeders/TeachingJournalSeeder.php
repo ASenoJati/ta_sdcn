@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Classroom;
+use App\Models\LessonHour;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeachingSchedule;
@@ -20,9 +21,12 @@ class TeachingJournalSeeder extends Seeder
     {
         // 1. Inisialisasi Role
         $teacherRole = Role::where('name', 'teacher')->first()
-            ?? Role::create(['name' => 'teacher', 'guard_name' => 'web']);
+            ?? Role::create([
+                'name' => 'teacher',
+                'guard_name' => 'web'
+            ]);
 
-        // 2. Data Guru & Mata Pelajaran Utama
+        // 2. Data Guru & Mata Pelajaran
         $teachersData = [
             [
                 'name' => 'Fawwaz Labib',
@@ -41,65 +45,88 @@ class TeachingJournalSeeder extends Seeder
             ],
         ];
 
-        // 3. Daftar Hari
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        // 3. Hari
+        $days = [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday'
+        ];
 
-        // 4. Inisialisasi Kelas
-        $class1 = Classroom::firstOrCreate(['name' => 'Kelas X - MIPA 1']);
-        $class2 = Classroom::firstOrCreate(['name' => 'Kelas XI - IPS 2']);
+        // 4. Kelas
+        $class1 = Classroom::firstOrCreate([
+            'name' => 'Kelas X - MIPA 1'
+        ]);
 
-        // 5. Loop Utama: Guru -> Hari -> Sesi
-        foreach ($teachersData as $data) {
-            // Buat User Guru
+        $class2 = Classroom::firstOrCreate([
+            'name' => 'Kelas XI - IPS 2'
+        ]);
+
+        /**
+         * 5. Buat Jam Pelajaran
+         */
+        $lessonHour1 = LessonHour::firstOrCreate(
+            ['session' => 1],
+            [
+                'start_time' => '07:30:00',
+                'end_time'   => '09:00:00',
+            ]
+        );
+
+        $lessonHour2 = LessonHour::firstOrCreate(
+            ['session' => 2],
+            [
+                'start_time' => '09:30:00',
+                'end_time'   => '11:00:00',
+            ]
+        );
+
+        /**
+         * 6. Loop Guru
+         */
+        $lessonHours = LessonHour::all();
+        $classrooms = [$class1, $class2];
+
+        foreach ($teachersData as $teacherIndex => $data) {
+
             $teacher = User::firstOrCreate(
                 ['email' => $data['email']],
                 [
-                    'name'     => $data['name'],
+                    'name' => $data['name'],
                     'password' => Hash::make('password123'),
-                    'role_id'  => $teacherRole->id,
+                    'role_id' => $teacherRole->id,
                 ]
             );
 
             $teacher->assignRole($teacherRole);
 
-            // Buat Mata Pelajaran
-            $subject = Subject::firstOrCreate(['name' => $data['subject']]);
+            $subject = Subject::firstOrCreate([
+                'name' => $data['subject']
+            ]);
 
-            foreach ($days as $day) {
-                // Pengaturan Jam Khusus Jumat
-                $session1_start = '07:30:00';
-                $session1_end   = ($day === 'Friday') ? '08:30:00' : '09:00:00';
+            foreach ($days as $dayIndex => $day) {
 
-                $session2_start = ($day === 'Friday') ? '09:00:00' : '09:30:00';
-                $session2_end   = ($day === 'Friday') ? '10:30:00' : '11:00:00';
+                $lessonHour = $lessonHours[$teacherIndex % $lessonHours->count()];
+                $classroom  = $classrooms[$teacherIndex % count($classrooms)];
 
-                // Buat Jadwal Sesi 1 (Di Kelas 1)
-                TeachingSchedule::create([
+                TeachingSchedule::firstOrCreate([
+                    'classroom_id'   => $classroom->id,
+                    'day'            => $day,
+                    'lesson_hour_id' => $lessonHour->id,
+                ], [
                     'user_id'      => $teacher->id,
                     'subject_id'   => $subject->id,
-                    'classroom_id' => $class1->id,
-                    'day'          => $day,
-                    'start_time'   => $session1_start,
-                    'end_time'     => $session1_end,
-                ]);
-
-                // Buat Jadwal Sesi 2 (Di Kelas 2)
-                TeachingSchedule::create([
-                    'user_id'      => $teacher->id,
-                    'subject_id'   => $subject->id,
-                    'classroom_id' => $class2->id,
-                    'day'          => $day,
-                    'start_time'   => $session2_start,
-                    'end_time'     => $session2_end,
                 ]);
             }
         }
 
-        // 6. Buat Siswa Sample (Opsional)
+        // 7. Seed Siswa
         $this->seedStudents($class1->id);
     }
 
-    private function seedStudents($classId)
+    private function seedStudents($classId): void
     {
         $students = [
             ['name' => 'Aditya Pratama', 'nis' => '21001'],
@@ -110,7 +137,10 @@ class TeachingJournalSeeder extends Seeder
         foreach ($students as $s) {
             Student::firstOrCreate(
                 ['nis' => $s['nis']],
-                ['name' => $s['name'], 'classroom_id' => $classId]
+                [
+                    'name' => $s['name'],
+                    'classroom_id' => $classId
+                ]
             );
         }
     }

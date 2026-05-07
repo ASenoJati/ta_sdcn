@@ -13,26 +13,55 @@ use Illuminate\Support\Facades\DB;
 class JournalController extends Controller
 {
     /**
-     * 1. Tampilkan Jadwal Mengajar Hari Ini (Gambar 1)
+     * 1. Jadwal Mengajar Hari Ini
      */
     public function index(Request $request)
     {
         $today = now()->toDateString();
         $dayName = now()->format('l');
 
-        $schedules = TeachingSchedule::with(['subject', 'classroom'])
+        $schedules = TeachingSchedule::with([
+            'subject',
+            'classroom',
+            'lessonHour'
+        ])
             ->where('user_id', $request->user()->id)
             ->where('day', $dayName)
+            ->orderBy('lesson_hour_id')
             ->get()
             ->map(function ($schedule) use ($today) {
 
-                $isDone = TeachingJournal::where('teaching_schedule_id', $schedule->id)
+                $isDone = TeachingJournal::where(
+                    'teaching_schedule_id',
+                    $schedule->id
+                )
                     ->whereDate('date', $today)
                     ->exists();
 
-                $schedule->is_journal_filled = $isDone;
+                return [
+                    'id' => $schedule->id,
 
-                return $schedule;
+                    'subject' => [
+                        'id' => $schedule->subject->id,
+                        'name' => $schedule->subject->name,
+                    ],
+
+                    'classroom' => [
+                        'id' => $schedule->classroom->id,
+                        'name' => $schedule->classroom->name,
+                    ],
+
+                    'lesson_hour' => [
+                        'id' => $schedule->lessonHour->id,
+                        'session' => $schedule->lessonHour->session,
+                        'start_time' => $schedule->lessonHour->start_time,
+                        'end_time' => $schedule->lessonHour->end_time,
+                    ],
+
+                    'day' => $schedule->day,
+
+                    'is_journal_filled' => $isDone,
+                ];
             });
 
         return response()->json([
@@ -41,11 +70,19 @@ class JournalController extends Controller
         ]);
     }
 
+    /**
+     * 2. Detail Jurnal
+     */
     public function detail($scheduleId)
     {
         $today = now()->toDateString();
 
-        $journal = TeachingJournal::with('attendances.student')
+        $journal = TeachingJournal::with([
+            'attendances.student',
+            'teachingSchedule.lessonHour',
+            'teachingSchedule.subject',
+            'teachingSchedule.classroom',
+        ])
             ->where('teaching_schedule_id', $scheduleId)
             ->whereDate('date', $today)
             ->firstOrFail();
@@ -56,74 +93,122 @@ class JournalController extends Controller
                 'id' => $journal->id,
                 'material' => $journal->material,
                 'reflection' => $journal->reflection,
+
+                'schedule' => [
+                    'subject' => $journal->teachingSchedule->subject->name,
+                    'classroom' => $journal->teachingSchedule->classroom->name,
+                    'session' => $journal->teachingSchedule->lessonHour->session,
+                    'start_time' => $journal->teachingSchedule->lessonHour->start_time,
+                    'end_time' => $journal->teachingSchedule->lessonHour->end_time,
+                ],
+
                 'attendances' => $journal->attendances
             ]
         ]);
     }
 
     /**
-     * 2. Ambil List Siswa berdasarkan Jadwal (Gambar 2)
+     * 3. Ambil Siswa Berdasarkan Jadwal
      */
     public function getStudentsBySchedule($scheduleId)
     {
-        // Gunakan with() untuk load classroom sekalian jika butuh data kelasnya nanti
-        $schedule = TeachingSchedule::findOrFail($scheduleId);
+        $schedule = TeachingSchedule::with([
+            'classroom',
+            'lessonHour',
+            'subject'
+        ])
+            ->findOrFail($scheduleId);
 
-        // Pastikan timezone sudah benar di config/app.php agar $today akurat
         $today = now('Asia/Jakarta')->toDateString();
 
-        // 1. Ambil journal hari ini
-        $journal = TeachingJournal::where('teaching_schedule_id', $scheduleId)
+        $journal = TeachingJournal::where(
+            'teaching_schedule_id',
+            $scheduleId
+        )
             ->whereDate('date', $today)
             ->first();
 
-        // 2. Ambil semua siswa di kelas tersebut
-        $students = Student::where('classroom_id', $schedule->classroom_id)
-            ->orderBy('name', 'asc') // Tambahkan order agar daftar siswa rapi (A-Z)
+        $students = Student::where(
+            'classroom_id',
+            $schedule->classroom_id
+        )
+            ->orderBy('name', 'asc')
             ->get();
 
-        // 3. Ambil absensi jika jurnal ada
         $attendances = [];
+
         if ($journal) {
-            $attendances = StudentAttendance::where('teaching_journal_id', $journal->id)
+            $attendances = StudentAttendance::where(
+                'teaching_journal_id',
+                $journal->id
+            )
                 ->pluck('status', 'student_id')
                 ->toArray();
         }
 
-        // 4. Map data
         $data = $students->map(function ($s) use ($attendances) {
             return [
                 'id'     => $s->id,
                 'name'   => $s->name,
                 'nis'    => $s->nis,
-                // Jika student_id tidak ada di array attendances, default ke string kosong
                 'status' => $attendances[$s->id] ?? '',
             ];
         });
 
         return response()->json([
-            'success'    => true,
-            'journal_id' => $journal ? $journal->id : null,
-            'material'   => $journal ? $journal->material : '',
-            'data'       => $data
+            'success' => true,
+
+            'schedule' => [
+                'id' => $schedule->id,
+                'subject' => $schedule->subject->name,
+                'classroom' => $schedule->classroom->name,
+                'session' => $schedule->lessonHour->session,
+                'start_time' => $schedule->lessonHour->start_time,
+                'end_time' => $schedule->lessonHour->end_time,
+            ],
+
+            'journal_id' => $journal?->id,
+            'material' => $journal?->material ?? '',
+            'data' => $data
         ]);
     }
+
     /**
-     * TAHAP 1: Simpan Presensi Siswa
-     * Setelah klik "Simpan Presensi" di Gambar 2
+     * 4. Simpan Presensi
      */
     public function storeAttendance(Request $request)
     {
         $request->validate([
             'teaching_schedule_id' => 'required|exists:teaching_schedules,id',
             'material' => 'required|string',
+
             'attendances' => 'required|array',
+
             'attendances.*.student_id' => 'required|exists:students,id',
+
             'attendances.*.status' => 'required|in:hadir,izin,sakit,alpa',
         ]);
 
         return DB::transaction(function () use ($request) {
-            // 1. Buat Header Jurnal (Tanpa Refleksi Dulu)
+
+            $today = now()->toDateString();
+
+            // Prevent duplicate journal
+            $existingJournal = TeachingJournal::where(
+                'teaching_schedule_id',
+                $request->teaching_schedule_id
+            )
+                ->whereDate('date', $today)
+                ->first();
+
+            if ($existingJournal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jurnal hari ini sudah dibuat'
+                ], 422);
+            }
+
+            // Create Journal
             $journal = TeachingJournal::create([
                 'teaching_schedule_id' => $request->teaching_schedule_id,
                 'date' => now(),
@@ -131,8 +216,9 @@ class JournalController extends Controller
                 'reflection' => null,
             ]);
 
-            // 2. Simpan Detail Absensi
+            // Attendance
             foreach ($request->attendances as $att) {
+
                 StudentAttendance::create([
                     'teaching_journal_id' => $journal->id,
                     'student_id' => $att['student_id'],
@@ -140,17 +226,24 @@ class JournalController extends Controller
                 ]);
             }
 
-            // Kembalikan ID Jurnal agar Flutter bisa menggunakannya untuk simpan refleksi
             return response()->json([
                 'success' => true,
-                'message' => 'Presensi berhasil disimpan. Silahkan isi refleksi.',
+                'message' => 'Presensi berhasil disimpan',
                 'journal_id' => $journal->id
             ]);
         });
     }
 
+    /**
+     * 5. Update Jurnal
+     */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'material' => 'required|string',
+            'attendances' => 'required|array',
+        ]);
+
         $journal = TeachingJournal::findOrFail($id);
 
         DB::transaction(function () use ($request, $journal) {
@@ -160,6 +253,7 @@ class JournalController extends Controller
             ]);
 
             foreach ($request->attendances as $att) {
+
                 StudentAttendance::updateOrCreate(
                     [
                         'teaching_journal_id' => $journal->id,
@@ -179,8 +273,7 @@ class JournalController extends Controller
     }
 
     /**
-     * TAHAP 2: Simpan Refleksi (Endpoint Sendiri)
-     * Setelah klik "Simpan Refleksi" di Gambar 3
+     * 6. Simpan Refleksi
      */
     public function storeReflection(Request $request, $journalId)
     {

@@ -16,10 +16,23 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->foreignId('subject_id')->constrained();
             $table->foreignId('classroom_id')->constrained();
-            $table->enum('day', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
-            $table->time('start_time');
-            $table->time('end_time');
+            $table->foreignId('lesson_hour_id')->constrained();
+
+            $table->enum('day', [
+                'Monday',
+                'Tuesday',
+                'Wednesday',
+                'Thursday',
+                'Friday',
+                'Saturday'
+            ]);
             $table->timestamps();
+
+            $table->unique([
+                'user_id',
+                'day',
+                'lesson_hour_id'
+            ], 'unique_teacher_day_lesson_hour');
         });
     }
 
