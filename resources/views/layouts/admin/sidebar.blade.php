@@ -47,6 +47,12 @@
                         <p>Data Kelas</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('subjects.index') }}" class="nav-link {{ request()->routeIs('subjects.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-book"></i>
+                        <p>Data Mata Pelajaran</p>
+                    </a>
+                </li>
 
                 <li class="nav-header">PRESENSI GURU</li>
                 <li class="nav-item">
