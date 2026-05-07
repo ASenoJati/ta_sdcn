@@ -10,7 +10,7 @@
                 class="brand-image opacity-75 shadow" />
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
-            <span class="brand-text fw-light">AdminLTE 4</span>
+            <span class="brand-text fw-light">SDCN</span>
             <!--end::Brand Text-->
         </a>
         <!--end::Brand Link-->
@@ -33,6 +33,7 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
+
                 <li class="nav-header">SISWA</li>
                 <li class="nav-item">
                     <a href="{{ route('students.index') }}" class="nav-link {{ request()->routeIs('students.*') ? 'active' : '' }}">
@@ -40,6 +41,22 @@
                         <p>Data Siswa</p>
                     </a>
                 </li>
+                 <li class="nav-item">
+                    <a href="{{ route('classrooms.index') }}" class="nav-link {{ request()->routeIs('classrooms.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-building"></i>
+                        <p>Data Kelas</p>
+                    </a>
+                </li>
+
+
+                <li class="nav-header">USER</li>
+                <li class="nav-item">
+                    <a href="" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-person"></i>
+                        <p>Data User</p>
+                    </a>
+                </li>
+
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-box-seam-fill"></i>
