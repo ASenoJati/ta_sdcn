@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\Admin\ClassroomController;
 use App\Http\Controllers\Web\Admin\DashboardController;
+use App\Http\Controllers\Web\Admin\LocationsController;
 use App\Http\Controllers\Web\Admin\StudentsController;
 use App\Http\Controllers\Web\Admin\UsersController;
 use App\Http\Controllers\Web\AuthController;
@@ -24,12 +25,16 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/students', StudentsController::class);
         Route::resource('/classrooms', ClassroomController::class);
         Route::resource('/user', UsersController::class);
+        Route::resource('/location', LocationsController::class);
 
         Route::get('students-data', [StudentsController::class, 'getData'])->name('students.data');
         Route::get('classrooms-data', [ClassroomController::class, 'getData'])->name('classrooms.data');
         Route::get('classrooms-list', [ClassroomController::class, 'getList'])->name('classrooms.list');
         Route::get('user-data', [UsersController::class, 'getData'])->name('user.data');
         Route::get('user-roles', [UsersController::class, 'getRoles'])->name('user.roles');
+        Route::get('location-data', [LocationsController::class, 'getData'])->name('location.data');
+        Route::post('location/{id}/set-default', [LocationsController::class, 'setDefault'])->name('location.set-default');
+        Route::get('location-default', [LocationsController::class, 'getDefault'])->name('location.default');
     });
 
     // Route Khusus Teacher

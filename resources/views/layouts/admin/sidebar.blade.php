@@ -48,6 +48,14 @@
                     </a>
                 </li>
 
+                <li class="nav-header">PRESENSI GURU</li>
+                 <li class="nav-item">
+                    <a href="{{ route('location.index') }}" class="nav-link {{ request()->routeIs('location.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-geo-alt"></i>
+                        <p>Lokasi</p>
+                    </a>
+                </li>
+
 
                 <li class="nav-header">USER</li>
                 <li class="nav-item">
