@@ -114,7 +114,7 @@ class HeaderComposer
                 'icon' => 'bi-journal-bookmark-fill',
                 'message' => 'Jurnal baru: ' . $journal->teachingSchedule->subject->name . ' (' . $journal->date->format('d/m/Y') . ')',
                 'time' => $journal->created_at->diffForHumans(),
-                'link' => route('admin.teaching-journals.index')
+                'link' => route('teaching-journals.index')
             ];
         }
 
