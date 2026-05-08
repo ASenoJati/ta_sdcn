@@ -199,7 +199,7 @@
         
         <!-- Second Row Charts -->
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-6 mt-4">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -218,7 +218,7 @@
                 </div>
             </div>
             
-            <div class="col-lg-6">
+            <div class="col-lg-6 mt-4">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -239,7 +239,7 @@
         </div>
         
         <!-- Today's Schedule & Recent Activities -->
-        <div class="row">
+        <div class="row mt-4">
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
@@ -330,7 +330,7 @@
         </div>
         
         <!-- Location Map Row -->
-        <div class="row">
+        <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
@@ -349,7 +349,7 @@
         </div>
         
         <!-- Quick Stats Cards -->
-        <div class="row">
+        <div class="row mt-4 mb-2">
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
