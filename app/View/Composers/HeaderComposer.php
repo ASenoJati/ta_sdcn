@@ -99,7 +99,7 @@ class HeaderComposer
                 'icon' => 'bi-clock-history',
                 'message' => $attendance->user->name . ' (Guru) - Belum check-out hari ini',
                 'time' => 'Hari ini',
-                'link' => route('admin.user-attendances.index')
+                'link' => route('user-attendances.index')
             ];
         }
 
