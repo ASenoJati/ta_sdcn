@@ -18,54 +18,6 @@
 
         <!--begin::End Navbar Links-->
         <ul class="navbar-nav ms-auto">
-            <!--begin::Messages Dropdown Menu-->
-            <li class="nav-item dropdown">
-                <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                    <i class="bi bi-chat-text"></i>
-                    <span class="navbar-badge badge text-bg-danger">{{ $unreadMessagesCount ?? 0 }}</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <span class="dropdown-item dropdown-header">{{ $unreadMessagesCount ?? 0 }} Notifications</span>
-                    
-                    @if(isset($recentMessages) && count($recentMessages) > 0)
-                        @foreach($recentMessages as $message)
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <img
-                                            src="{{ $message['avatar'] ?? asset('assets/img/default-avatar.jpg') }}"
-                                            alt="User Avatar"
-                                            class="img-size-50 rounded-circle me-3" />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h3 class="dropdown-item-title">
-                                            {{ $message['name'] }}
-                                            <span class="float-end fs-7 text-{{ $message['starred'] ? 'danger' : 'secondary' }}">
-                                                <i class="bi bi-star-fill"></i>
-                                            </span>
-                                        </h3>
-                                        <p class="fs-7">{{ $message['preview'] }}</p>
-                                        <p class="fs-7 text-secondary">
-                                            <i class="bi bi-clock-fill me-1"></i> {{ $message['time'] }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
-                        @endforeach
-                    @else
-                        <div class="dropdown-item text-center text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            Tidak ada pesan
-                        </div>
-                    @endif
-                    
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item dropdown-footer">Lihat Semua Pesan</a>
-                </div>
-            </li>
-            <!--end::Messages Dropdown Menu-->
-
             <!--begin::Notifications Dropdown Menu-->
             <li class="nav-item dropdown">
                 <a class="nav-link" data-bs-toggle="dropdown" href="#">
