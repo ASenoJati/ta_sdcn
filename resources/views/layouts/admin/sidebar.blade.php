@@ -66,6 +66,14 @@
                         <i class="nav-icon bi bi-calendar-check"></i>
                         <p>Jadwal Mengajar</p>
                     </a>
+                </li>
+                 <li class="nav-item">
+                    <a href="{{ route('teaching-journals.index') }}" class="nav-link {{ request()->routeIs('teaching-journals.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-calendar-check"></i>
+                        <p>Jurnal Mengajar</p>
+                    </a>
+                </li>
+
 
                 <li class="nav-header">PRESENSI GURU</li>
                 <li class="nav-item">
@@ -85,6 +93,13 @@
                         <i class="nav-icon bi bi-clock-history"></i>
                         <p>Waktu Presensi</p>
                     </a>
+                </li>
+                 <li class="nav-item">
+                    <a href="{{ route('user-attendances.index') }}" class="nav-link {{ request()->routeIs('user-attendances.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-clipboard-check"></i>
+                        <p>Data Presensi Guru</p>
+                    </a>
+                </li>
 
                 <li class="nav-header">USER</li>
                 <li class="nav-item">
