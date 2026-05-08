@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/dashboard-charts', [DashboardController::class, 'getChartData'])->name('admin.dashboard.charts');
+
         Route::resource('/students', StudentsController::class);
         Route::resource('/classrooms', ClassroomController::class);
         Route::resource('/user', UsersController::class);
