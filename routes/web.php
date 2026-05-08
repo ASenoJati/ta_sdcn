@@ -8,7 +8,9 @@ use App\Http\Controllers\Web\Admin\LocationsController;
 use App\Http\Controllers\Web\Admin\RoleAttendanceTimeController;
 use App\Http\Controllers\Web\Admin\StudentsController;
 use App\Http\Controllers\Web\Admin\SubjectController;
+use App\Http\Controllers\Web\Admin\TeachingJournalController;
 use App\Http\Controllers\Web\Admin\TeachingScheduleController;
+use App\Http\Controllers\Web\Admin\UserAttendanceController;
 use App\Http\Controllers\Web\Admin\UsersController;
 use App\Http\Controllers\Web\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +38,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/subjects', SubjectController::class);
         Route::resource('/lesson-hours', LessonHourController::class);
         Route::resource('/teaching-schedules', TeachingScheduleController::class);
+        Route::resource('/teaching-journals', TeachingJournalController::class);
+        Route::resource('/user-attendances', UserAttendanceController::class);
 
         Route::get('students-data', [StudentsController::class, 'getData'])->name('students.data');
         Route::get('classrooms-data', [ClassroomController::class, 'getData'])->name('classrooms.data');
@@ -56,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('teaching-schedules-teachers', [TeachingScheduleController::class, 'getTeachers'])->name('teaching-schedules.teachers');
         Route::get('teaching-schedules-lesson-hours', [TeachingScheduleController::class, 'getLessonHours'])->name('teaching-schedules.lesson-hours');
         Route::post('teaching-schedules-check-availability', [TeachingScheduleController::class, 'checkAvailability'])->name('teaching-schedules.check-availability');
+        Route::get('teaching-journals-data', [TeachingJournalController::class, 'getData'])->name('teaching-journals.data');
+        Route::get('user-attendances-data', [UserAttendanceController::class, 'getData'])->name('user-attendances.data');
     });
 
     // Route Khusus Teacher

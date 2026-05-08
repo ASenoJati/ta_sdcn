@@ -63,10 +63,10 @@ class AttendanceController extends Controller
         $distance = $this->calculateDistance($location->latitude, $location->longitude, $request->latitude, $request->longitude);
 
         // 4. Hitung Status Berdasarkan Waktu & Jarak
-        $attendanceTime = RoleAttendanceTime::where('role_id', $user->role_id)->with('setting')->first();
+        $attendanceTime = RoleAttendanceTime::where('role_id', $user->role_id)->with('attendanceTimeSetting')->first();
         if (!$attendanceTime) return response()->json(['message' => 'Jadwal absen role Anda belum diatur'], 422);
 
-        $status = $this->determineCheckInStatus($distance, $location->radius_km * 1000, $attendanceTime->setting);
+        $status = $this->determineCheckInStatus($distance, $location->radius_km * 1000, $attendanceTime->attendanceTimeSetting);
 
         // 5. Simpan Image
         $path = $request->file('image')->store('attendance/check_in', 'public');
@@ -74,7 +74,7 @@ class AttendanceController extends Controller
         // 6. Simpan Absensi
         $attendance = UserAttendance::create([
             'user_id' => $user->id,
-            'instance_location_id' => $location->id,
+            'location_id' => $location->id,
             'attendance_date' => $today,
             'check_in_time' => now(),
             'check_in_status' => $status->value,
