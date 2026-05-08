@@ -61,4 +61,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(RoleAttendanceTime::class, 'role_id', 'role_id');
     }
+
+    public function attendances()
+    {
+        return $this->hasMany(UserAttendance::class, 'user_id');
+    }
 }
