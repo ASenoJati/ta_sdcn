@@ -21,7 +21,7 @@ class TeachingJournal extends Model
         'updated_at' => 'datetime'
     ];
 
-    public function schedule(): BelongsTo
+    public function teachingSchedule(): BelongsTo
     {
         return $this->belongsTo(TeachingSchedule::class, 'teaching_schedule_id');
     }
