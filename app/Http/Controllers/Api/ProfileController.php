@@ -13,11 +13,11 @@ class ProfileController extends Controller
         // Ambil user yang login beserta role dan jadwal waktunya
         $user = $request->user()->load([
             'role',
-            'roleAttendance.setting'
+            'roleAttendance.attendanceTimeSetting'
         ]);
 
         // Transformasi data agar rapi saat diterima Flutter
-        $schedule = $user->roleAttendance?->setting;
+        $schedule = $user->roleAttendance?->attendanceTimeSetting;
 
         return response()->json([
             'success' => true,
