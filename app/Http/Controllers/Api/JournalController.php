@@ -293,4 +293,46 @@ class JournalController extends Controller
             'data' => $journal
         ]);
     }
+
+    /**
+     * Menampilkan semua jadwal mengajar dalam satu pekan
+     */
+    public function allSchedules(Request $request)
+    {
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        $schedules = TeachingSchedule::with([
+            'subject',
+            'classroom',
+            'lessonHour'
+        ])
+            ->where('user_id', $request->user()->id)
+            ->get()
+            ->groupBy('day');
+
+        // Kita susun agar urut berdasarkan hari (Opsional)
+        $formattedData = [];
+        foreach ($days as $day) {
+            if (isset($schedules[$day])) {
+                $formattedData[$day] = $schedules[$day]->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'subject' => $item->subject->name,
+                        'classroom' => $item->classroom->name,
+                        'session' => $item->lessonHour->session,
+                        'start_time' => $item->lessonHour->start_time,
+                        'end_time' => $item->lessonHour->end_time,
+                    ];
+                });
+            } else {
+                $formattedData[$day] = [];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jadwal Mingguan',
+            'data' => $formattedData
+        ]);
+    }
 }
