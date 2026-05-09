@@ -335,4 +335,61 @@ class JournalController extends Controller
             'data' => $formattedData
         ]);
     }
+
+    /**
+     * Riwayat Jurnal berdasarkan filter Bulan dan Tahun
+     */
+    public function history(Request $request)
+    {
+        // Validasi input: default ke bulan dan tahun sekarang jika tidak diisi
+        $month = $request->query('month', now()->month);
+        $year = $request->query('year', now()->year);
+
+        $journals = TeachingJournal::with([
+            'teachingSchedule.subject',
+            'teachingSchedule.classroom',
+            'teachingSchedule.lessonHour'
+        ])
+            ->whereHas('teachingSchedule', function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($journal) {
+                $schedule = $journal->teachingSchedule;
+
+                return [
+                    'id' => $schedule->id,
+                    'journal_id' => $journal->id, // Tambahan ID Jurnal agar mudah akses detail
+                    'date' => $journal->date->toDateString(), // Info tanggal jurnal dibuat
+                    'subject' => [
+                        'id' => $schedule->subject->id,
+                        'name' => $schedule->subject->name,
+                    ],
+                    'classroom' => [
+                        'id' => $schedule->classroom->id,
+                        'name' => $schedule->classroom->name,
+                    ],
+                    'lesson_hour' => [
+                        'id' => $schedule->lessonHour->id,
+                        'session' => $schedule->lessonHour->session,
+                        'start_time' => $schedule->lessonHour->start_time,
+                        'end_time' => $schedule->lessonHour->end_time,
+                    ],
+                    'day' => $schedule->day,
+                    'is_journal_filled' => true // Karena diambil dari tabel Journal, pasti true
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'filter' => [
+                'month' => (int)$month,
+                'year' => (int)$year
+            ],
+            'data' => $journals
+        ]);
+    }
 }

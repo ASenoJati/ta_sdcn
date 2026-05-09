@@ -51,5 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/journals/{id}/update', [JournalController::class, 'update']);
         // List semua jadwal dalam satu pekan
         Route::get('/journals/schedules/all', [JournalController::class, 'allSchedules']);
+        // Riwayat jurnal dengan filter ?month=5&year=2026
+        Route::get('/journals/history', [JournalController::class, 'history']);
     });
 });
