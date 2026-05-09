@@ -53,5 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/journals/schedules/all', [JournalController::class, 'allSchedules']);
         // Riwayat jurnal dengan filter ?month=5&year=2026
         Route::get('/journals/history', [JournalController::class, 'history']);
+
+        Route::get('/journals/journal/{journalId}', [JournalController::class, 'getJournalById']);
     });
 });

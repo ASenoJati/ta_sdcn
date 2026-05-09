@@ -392,4 +392,57 @@ class JournalController extends Controller
             'data' => $journals
         ]);
     }
+
+    /**
+     * Get journal detail by journal ID (untuk data lama / history)
+     */
+    public function getJournalById($journalId)
+    {
+        $journal = TeachingJournal::with([
+            'attendances.student',
+            'teachingSchedule.lessonHour',
+            'teachingSchedule.subject',
+            'teachingSchedule.classroom',
+        ])
+            ->whereHas('teachingSchedule', function ($query) {
+                $query->where('user_id', request()->user()->id);
+            })
+            ->findOrFail($journalId);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $journal->id,
+                'material' => $journal->material,
+                'reflection' => $journal->reflection,
+
+                'schedule' => [
+                    'subject' => $journal->teachingSchedule->subject->name,
+                    'classroom' => $journal->teachingSchedule->classroom->name,
+                    'session' => $journal->teachingSchedule->lessonHour->session,
+                    'start_time' => $journal->teachingSchedule->lessonHour->start_time,
+                    'end_time' => $journal->teachingSchedule->lessonHour->end_time,
+                ],
+
+                'attendances' => $journal->attendances->map(function ($att) {
+                    return [
+                        'id' => $att->id,
+                        'teaching_journal_id' => $att->teaching_journal_id,
+                        'student_id' => $att->student_id,
+                        'status' => $att->status,
+                        'created_at' => $att->created_at,
+                        'updated_at' => $att->updated_at,
+                        'student' => [
+                            'id' => $att->student->id,
+                            'classroom_id' => $att->student->classroom_id,
+                            'name' => $att->student->name,
+                            'nis' => $att->student->nis,
+                            'created_at' => $att->student->created_at,
+                            'updated_at' => $att->student->updated_at,
+                        ]
+                    ];
+                }),
+            ]
+        ]);
+    }
 }
