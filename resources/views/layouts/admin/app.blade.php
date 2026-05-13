@@ -25,6 +25,8 @@
     />
     <!--end::Primary Meta Tags-->
 
+    <link rel="icon" href="{{ asset('assets/img/logo-school.png') }}" type="image/png" />
+
     <!--begin::Accessibility Features-->
     <meta name="supported-color-schemes" content="light dark" />
     <link rel="preload" href="{{ asset('css/adminlte.css') }}" as="style" />
