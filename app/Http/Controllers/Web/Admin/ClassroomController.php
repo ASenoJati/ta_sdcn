@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
-use Exception;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\DataTables;
@@ -21,28 +21,73 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Display students by classroom.
+     */
+    public function showStudents($id)
+    {
+        $classroom = Classroom::findOrFail($id);
+        return view('admin.classrooms.students', compact('classroom'));
+    }
+
+    /**
+     * Get students data for specific classroom.
+     */
+    public function getStudentsData(Request $request, $id)
+    {
+        try {
+            $classroom = Classroom::findOrFail($id);
+
+            $students = Student::where('classroom_id', $id)
+                ->with('classroom')
+                ->select('students.*');
+
+            return DataTables::of($students)
+                ->addIndexColumn()
+                ->addColumn('classroom_name', function ($row) use ($classroom) {
+                    return $classroom->name;
+                })
+                ->addColumn('aksi', function ($row) {
+                    return '
+                        <button type="button" class="btn btn-warning btn-sm me-1" onclick="editStudent(' . $row->id . ')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ', \'' . addslashes($row->name) . '\')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ';
+                })
+                ->rawColumns(['aksi'])
+                ->make(true);
+        } catch (\Exception $e) {
+            Log::error('DataTables Error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Get data for DataTables.
      */
     public function getData(Request $request)
     {
         try {
-            $classrooms = Classroom::withCount('students')->select('classrooms.*');
+            $classrooms = Classroom::withCount('students');
 
             return DataTables::of($classrooms)
                 ->addIndexColumn()
-                ->addColumn('description', function ($row) {
-                    return $row->description ?? '-';
-                })
                 ->addColumn('students_count', function ($row) {
-                    $count = $row->students_count;
-                    $badgeColor = $count > 0 ? 'primary' : 'secondary';
-                    return '<span class="badge bg-' . $badgeColor . '">' . $count . ' Siswa</span>';
+                    return '<span class="badge bg-primary">' . $row->students_count . ' Siswa</span>';
                 })
-                ->addColumn('created_at', function ($row) {
+                ->addColumn('description_short', function ($row) {
+                    return \Str::limit($row->description, 50) ?? '-';
+                })
+                ->addColumn('created_at_formatted', function ($row) {
                     return $row->created_at->format('d/m/Y H:i');
                 })
                 ->addColumn('aksi', function ($row) {
                     return '
+                        <a href="' . route('classrooms.students', $row->id) . '" class="btn btn-info btn-sm me-1">
+                            <i class="bi bi-eye"></i> Lihat Siswa
+                        </a>
                         <button type="button" class="btn btn-warning btn-sm me-1" onclick="editClassroom(' . $row->id . ')">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -60,32 +105,13 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Get list of classrooms for dropdown.
-     */
-    public function getList()
-    {
-        $classrooms = Classroom::select('id', 'name')->orderBy('name')->get();
-        return response()->json($classrooms);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         try {
-            Log::info('Store classroom request', ['data' => $request->all()]);
-
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:100|unique:classrooms,name',
+                'name' => 'required|string|max:255|unique:classrooms,name',
                 'description' => 'nullable|string'
             ]);
 
@@ -100,9 +126,7 @@ class ClassroomController extends Controller
                 'message' => 'Data kelas berhasil ditambahkan!',
                 'data' => $classroom
             ]);
-        } catch (Exception $e) {
-            Log::error('Error storing classroom: ' . $e->getMessage());
-
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -111,17 +135,9 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
         $classroom = Classroom::findOrFail($id);
         return response()->json($classroom);
@@ -133,15 +149,10 @@ class ClassroomController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            Log::info('Update classroom request', [
-                'id' => $id,
-                'data' => $request->all()
-            ]);
-
             $classroom = Classroom::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:100|unique:classrooms,name,' . $id,
+                'name' => 'required|string|max:255|unique:classrooms,name,' . $id,
                 'description' => 'nullable|string'
             ]);
 
@@ -157,8 +168,6 @@ class ClassroomController extends Controller
                 'data' => $classroom
             ]);
         } catch (\Exception $e) {
-            Log::error('Error updating classroom: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -174,7 +183,6 @@ class ClassroomController extends Controller
         try {
             $classroom = Classroom::findOrFail($id);
 
-            // Cek apakah kelas memiliki siswa
             if ($classroom->students()->count() > 0) {
                 return response()->json([
                     'success' => false,
@@ -189,12 +197,19 @@ class ClassroomController extends Controller
                 'message' => 'Data kelas berhasil dihapus!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error deleting classroom: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get list of classrooms for dropdown.
+     */
+    public function getList()
+    {
+        $classrooms = Classroom::select('id', 'name')->orderBy('name')->get();
+        return response()->json($classrooms);
     }
 }

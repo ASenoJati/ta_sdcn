@@ -46,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('students-data', [StudentsController::class, 'getData'])->name('students.data');
         Route::get('classrooms-data', [ClassroomController::class, 'getData'])->name('classrooms.data');
         Route::get('classrooms-list', [ClassroomController::class, 'getList'])->name('classrooms.list');
+        Route::get('/classrooms/{id}/students', [ClassroomController::class, 'showStudents'])->name('classrooms.students');
+        Route::get('/classrooms/{id}/students-data', [ClassroomController::class, 'getStudentsData'])->name('classrooms.students.data');
         Route::get('user-data', [UsersController::class, 'getData'])->name('user.data');
         Route::get('user-roles', [UsersController::class, 'getRoles'])->name('user.roles');
         Route::get('location-data', [LocationsController::class, 'getData'])->name('location.data');

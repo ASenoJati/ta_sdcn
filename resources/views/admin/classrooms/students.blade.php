@@ -1,6 +1,6 @@
 @extends('layouts.admin.app')
 
-@section('title', 'Manajemen Kelas')
+@section('title', 'Data Siswa - ' . $classroom->name)
 
 @section('content')
 <!--begin::App Content Header-->
@@ -8,12 +8,13 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
-                <h3 class="mb-0">Manajemen Kelas</h3>
+                <h3 class="mb-0">Data Siswa - {{ $classroom->name }}</h3>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-end">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Kelas</li>
+                    <li class="breadcrumb-item"><a href="{{ route('classrooms.index') }}">Kelas</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ $classroom->name }}</li>
                 </ol>
             </div>
         </div>
@@ -28,24 +29,28 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h3 class="card-title">Data Kelas</h3>
+                        <h3 class="card-title">
+                            <i class="bi bi-people-fill me-2"></i> Daftar Siswa Kelas {{ $classroom->name }}
+                        </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalClassroom" onclick="resetForm()">
-                                <i class="bi bi-plus-circle"></i> Tambah Kelas
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalStudent" onclick="resetForm()">
+                                <i class="bi bi-plus-circle"></i> Tambah Siswa
                             </button>
+                            <a href="{{ route('classrooms.index') }}" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-arrow-left"></i> Kembali
+                            </a>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="classroomTable" class="table table-bordered table-striped">
+                            <table id="studentsTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
-                                        <th>Nama Kelas</th>
-                                        <th>Deskripsi</th>
-                                        <th>Jumlah Siswa</th>
-                                        <th>Tanggal Dibuat</th>
-                                        <th width="20%">Aksi</th>
+                                        <th>NIS</th>
+                                        <th>Nama Lengkap</th>
+                                        <th>Kelas</th>
+                                        <th width="15%">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -59,27 +64,32 @@
 </div>
 <!--end::App Content-->
 
-<!-- Modal Form Classroom -->
-<div class="modal fade" id="modalClassroom" tabindex="-1" aria-labelledby="modalClassroomLabel" aria-hidden="true">
+<!-- Modal Form Student -->
+<div class="modal fade" id="modalStudent" tabindex="-1" aria-labelledby="modalStudentLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalClassroomLabel">Form Kelas</h5>
+                <h5 class="modal-title" id="modalStudentLabel">Form Siswa</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="classroomForm" method="POST">
+            <form id="studentForm" method="POST">
                 @csrf
-                <input type="hidden" name="id" id="classroom_id">
+                <input type="hidden" name="id" id="student_id">
+                <input type="hidden" name="classroom_id" id="classroom_id" value="{{ $classroom->id }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Nama Kelas <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Contoh: X RPL 1" required>
+                        <label for="nis" class="form-label">NIS <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="nis" name="nis" required>
                         <div class="invalid-feedback"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        <label for="name" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required>
                         <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Siswa akan ditambahkan ke kelas: <strong>{{ $classroom->name }}</strong>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -100,13 +110,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Apakah Anda yakin ingin menghapus kelas <strong id="classroom_name"></strong>?</p>
-                <p class="text-danger"><small>Perhatian: Kelas yang memiliki siswa tidak dapat dihapus!</small></p>
+                <p>Apakah Anda yakin ingin menghapus data siswa <strong id="student_name"></strong>?</p>
                 <input type="hidden" id="hapus_id">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-danger" onclick="deleteClassroom()">Hapus</button>
+                <button type="button" class="btn btn-danger" onclick="deleteStudent()">Hapus</button>
             </div>
         </div>
     </div>
@@ -133,16 +142,17 @@
 
 <script>
 $(document).ready(function() {
-    const table = $('#classroomTable').DataTable({
+    const classroomId = {{ $classroom->id }};
+    
+    const table = $('#studentsTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('classrooms.data') }}",
+        ajax: "{{ route('classrooms.students.data', $classroom->id) }}",
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'nis', name: 'nis' },
             { data: 'name', name: 'name' },
-            { data: 'description_short', name: 'description' },
-            { data: 'students_count', name: 'students_count' },
-            { data: 'created_at_formatted', name: 'created_at' },
+            { data: 'classroom_name', name: 'classroom.name' },
             { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
         ],
         language: {
@@ -157,28 +167,27 @@ $(document).ready(function() {
         ]
     });
 
-    $('#classroomForm').on('submit', function(e) {
+    $('#studentForm').on('submit', function(e) {
         e.preventDefault();
-        const id = $('#classroom_id').val();
-        let url = id ? "{{ url('admin/classrooms') }}/" + id : "{{ route('classrooms.store') }}";
-        let method = id ? 'POST' : 'POST';
+        const id = $('#student_id').val();
+        let url = id ? "{{ url('admin/students') }}/" + id : "{{ route('students.store') }}";
         
         if (id) {
-            if ($('#classroomForm input[name="_method"]').length === 0) {
-                $('#classroomForm').append('<input type="hidden" name="_method" value="PUT">');
+            if ($('#studentForm input[name="_method"]').length === 0) {
+                $('#studentForm').append('<input type="hidden" name="_method" value="PUT">');
             }
         } else {
-            $('#classroomForm input[name="_method"]').remove();
+            $('#studentForm input[name="_method"]').remove();
         }
         
         $.ajax({
             url: url,
-            type: method,
+            type: 'POST',
             data: $(this).serialize(),
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             success: function(response) {
                 if (response.success) {
-                    $('#modalClassroom').modal('hide');
+                    $('#modalStudent').modal('hide');
                     resetForm();
                     table.ajax.reload();
                     Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000 });
@@ -198,50 +207,48 @@ $(document).ready(function() {
     });
 });
 
-function editClassroom(id) {
+function editStudent(id) {
     $.ajax({
-        url: "{{ url('admin/classrooms') }}/" + id + "/edit",
+        url: "{{ url('admin/students') }}/" + id + "/edit",
         type: "GET",
         success: function(data) {
-            $('#classroom_id').val(data.id);
+            $('#student_id').val(data.id);
+            $('#nis').val(data.nis);
             $('#name').val(data.name);
-            $('#description').val(data.description);
-            $('#modalClassroomLabel').text('Edit Data Kelas');
-            $('#modalClassroom').modal('show');
+            $('#modalStudentLabel').text('Edit Data Siswa');
+            $('#modalStudent').modal('show');
         }
     });
 }
 
 function confirmDelete(id, name) {
     $('#hapus_id').val(id);
-    $('#classroom_name').text(name);
+    $('#student_name').text(name);
     $('#modalHapus').modal('show');
 }
 
-function deleteClassroom() {
+function deleteStudent() {
     const id = $('#hapus_id').val();
     $.ajax({
-        url: "{{ url('admin/classrooms') }}/" + id,
+        url: "{{ url('admin/students') }}/" + id,
         type: 'DELETE',
         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         success: function(response) {
             if (response.success) {
                 $('#modalHapus').modal('hide');
-                $('#classroomTable').DataTable().ajax.reload();
+                $('#studentsTable').DataTable().ajax.reload();
                 Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000 });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Gagal!', text: response.message });
             }
         }
     });
 }
 
 function resetForm() {
-    $('#classroomForm')[0].reset();
-    $('#classroom_id').val('');
-    $('#modalClassroomLabel').text('Tambah Data Kelas');
+    $('#studentForm')[0].reset();
+    $('#student_id').val('');
+    $('#modalStudentLabel').text('Tambah Data Siswa');
     $('.is-invalid').removeClass('is-invalid');
-    $('#classroomForm input[name="_method"]').remove();
+    $('#studentForm input[name="_method"]').remove();
 }
 </script>
 @endpush
