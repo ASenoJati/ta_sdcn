@@ -13,7 +13,6 @@ use App\Models\TeachingJournal;
 use App\Models\UserAttendance;
 use App\Models\LessonHour;
 use App\Models\AttendanceTimeSetting;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -197,11 +196,9 @@ class DashboardController extends Controller
      */
     private function getRecentActivities()
     {
-        $activities = collect();
-
         // Recent attendances
         $recentAttendances = UserAttendance::with('user')
-            ->orderBy('created_at', 'desc')
+            ->latest('created_at')
             ->limit(5)
             ->get()
             ->map(function ($item) {
@@ -210,6 +207,7 @@ class DashboardController extends Controller
                     'title' => 'Presensi Guru',
                     'description' => $item->user->name . ' melakukan presensi pada ' . $item->attendance_date->format('d/m/Y'),
                     'time' => $item->created_at->diffForHumans(),
+                    'created_at' => $item->created_at,
                     'icon' => 'bi-calendar-check',
                     'color' => 'success'
                 ];
@@ -217,7 +215,7 @@ class DashboardController extends Controller
 
         // Recent journals
         $recentJournals = TeachingJournal::with('teachingSchedule.subject')
-            ->orderBy('created_at', 'desc')
+            ->latest('created_at')
             ->limit(5)
             ->get()
             ->map(function ($item) {
@@ -226,13 +224,14 @@ class DashboardController extends Controller
                     'title' => 'Jurnal Pembelajaran',
                     'description' => 'Jurnal ' . $item->teachingSchedule->subject->name . ' ditambahkan',
                     'time' => $item->created_at->diffForHumans(),
+                    'created_at' => $item->created_at,
                     'icon' => 'bi-journal-bookmark-fill',
                     'color' => 'primary'
                 ];
             });
 
         // Recent students
-        $recentStudents = Student::orderBy('created_at', 'desc')
+        $recentStudents = Student::latest('created_at')
             ->limit(5)
             ->get()
             ->map(function ($item) {
@@ -241,18 +240,19 @@ class DashboardController extends Controller
                     'title' => 'Siswa Baru',
                     'description' => 'Siswa ' . $item->name . ' (NIS: ' . $item->nis . ') ditambahkan',
                     'time' => $item->created_at->diffForHumans(),
+                    'created_at' => $item->created_at,
                     'icon' => 'bi-people-fill',
                     'color' => 'info'
                 ];
             });
 
-        // Merge and sort
-        $activities = $recentAttendances->concat($recentJournals)->concat($recentStudents)
-            ->sortByDesc('time')
-            ->take(10)
+        // Merge, sort by newest, limit 5
+        return $recentAttendances
+            ->concat($recentJournals)
+            ->concat($recentStudents)
+            ->sortByDesc('created_at')
+            ->take(5)
             ->values();
-
-        return $activities;
     }
 
     /**
