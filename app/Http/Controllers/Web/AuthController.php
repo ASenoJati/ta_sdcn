@@ -23,20 +23,22 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
 
-            // Redirect berdasarkan role setelah login sukses
             $user = Auth::user();
+
             if ($user->hasRole('admin')) {
                 return redirect()->route('admin.dashboard');
             } elseif ($user->hasRole('teacher')) {
-                return redirect()->intended('/teacher/dashboard');
+                return redirect()->route('teacher.dashboard');
             } elseif ($user->hasRole('staff')) {
-                return redirect()->intended('/staff/dashboard');
+                return redirect()->route('staff.dashboard');
             }
 
-            return redirect()->intended('/home');
+            return redirect('/dashboard');
         }
 
-        return back()->withErrors(['email' => 'Email atau password salah.']);
+        return back()->withErrors([
+            'email' => 'Email atau password salah!',
+        ])->onlyInput('email');
     }
 
     public function logout(Request $request)
@@ -44,6 +46,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+
+        return redirect('/login')->with('info', 'Anda telah berhasil logout.');
     }
 }
