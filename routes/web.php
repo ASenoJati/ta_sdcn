@@ -14,6 +14,8 @@ use App\Http\Controllers\Web\Admin\UserAttendanceController;
 use App\Http\Controllers\Web\Admin\UsersController;
 use App\Http\Controllers\Web\AuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\File;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -78,3 +80,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+Route::get('/storage/{path}', function ($path) {
+    $file = storage_path('app/public/' . $path);
+
+    if (!File::exists($file)) {
+        abort(404);
+    }
+
+    return Response::file($file);
+})->where('path', '.*');
