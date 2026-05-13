@@ -10,6 +10,21 @@ class AuthController extends Controller
 {
     public function showForm()
     {
+        if (Auth::check()) {
+
+            $user = Auth::user();
+
+            if ($user->hasRole('admin')) {
+                return redirect()->route('admin.dashboard');
+            } elseif ($user->hasRole('teacher')) {
+                return redirect()->route('teacher.dashboard');
+            } elseif ($user->hasRole('staff')) {
+                return redirect()->route('staff.dashboard');
+            }
+
+            return redirect('/dashboard');
+        }
+
         return view('login');
     }
 

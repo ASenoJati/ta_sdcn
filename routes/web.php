@@ -21,15 +21,13 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/login', [AuthController::class, 'showForm'])->name('login')->middleware('guest');
+Route::get('/login', [AuthController::class, 'showForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
 
 Route::middleware(['auth'])->group(function () {
 
     // Route Khusus Admin
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
-        // Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/dashboard-charts', [DashboardController::class, 'getChartData'])->name('admin.dashboard.charts');
 
@@ -66,16 +64,25 @@ Route::middleware(['auth'])->group(function () {
         Route::post('teaching-schedules-check-availability', [TeachingScheduleController::class, 'checkAvailability'])->name('teaching-schedules.check-availability');
         Route::get('teaching-journals-data', [TeachingJournalController::class, 'getData'])->name('teaching-journals.data');
         Route::get('user-attendances-data', [UserAttendanceController::class, 'getData'])->name('user-attendances.data');
+
+        // User Profile routes
+        Route::get('/profile', [UsersController::class, 'profile'])->name('user.profile');
+        Route::post('/profile/update', [UsersController::class, 'updateProfile'])->name('user.update-profile');
+        Route::post('/profile/update-password', [UsersController::class, 'updatePassword'])->name('user.update-password');
     });
 
     // Route Khusus Teacher
     Route::middleware(['role:teacher'])->prefix('teacher')->group(function () {
-        // Route::get('/dashboard', [TeacherController::class, 'index'])->name('teacher.dashboard');
+        Route::get('/dashboard', function () {
+            return "<h1>Dashboard Guru</h1><p>Selamat datang di dashboard guru!</p>";
+        })->name('teacher.dashboard');
     });
 
     // Route Khusus Staff
     Route::middleware(['role:staff'])->prefix('staff')->group(function () {
-        // Route::get('/dashboard', [StaffController::class, 'index'])->name('staff.dashboard');
+        Route::get('/dashboard', function () {
+            return "<h1>Dashboard Staff</h1><p>Selamat datang di dashboard staff!</p>";
+        })->name('staff.dashboard');
     });
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');

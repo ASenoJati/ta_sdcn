@@ -26,23 +26,23 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                     <span class="dropdown-item dropdown-header">{{ $unreadNotificationsCount ?? 0 }} Notifications</span>
-                    
+
                     @if(isset($recentNotifications) && count($recentNotifications) > 0)
-                        @foreach($recentNotifications as $notification)
-                            <div class="dropdown-divider"></div>
-                            <a href="{{ $notification['link'] ?? '#' }}" class="dropdown-item">
-                                <i class="bi {{ $notification['icon'] ?? 'bi-bell' }} me-2"></i> 
-                                {{ $notification['message'] }}
-                                <span class="float-end text-secondary fs-7">{{ $notification['time'] }}</span>
-                            </a>
-                        @endforeach
+                    @foreach($recentNotifications as $notification)
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ $notification['link'] ?? '#' }}" class="dropdown-item">
+                        <i class="bi {{ $notification['icon'] ?? 'bi-bell' }} me-2"></i>
+                        {{ $notification['message'] }}
+                        <span class="float-end text-secondary fs-7">{{ $notification['time'] }}</span>
+                    </a>
+                    @endforeach
                     @else
-                        <div class="dropdown-item text-center text-muted">
-                            <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
-                            Tidak ada notifikasi
-                        </div>
+                    <div class="dropdown-item text-center text-muted">
+                        <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
+                        Tidak ada notifikasi
+                    </div>
                     @endif
-                    
+
                     <div class="dropdown-divider"></div>
                     <a href="#" class="dropdown-item dropdown-footer">Lihat Semua Notifikasi</a>
                 </div>
@@ -62,7 +62,7 @@
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img
-                        src="{{ Auth::user()->avatar ?? asset('assets/img/default-avatar.jpg') }}"
+                        src="{{ Auth::user()->avatar ? asset(Auth::user()->avatar) : asset('assets/img/logo-school.png') }}"
                         class="user-image rounded-circle shadow"
                         alt="User Image" />
                     <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
@@ -71,7 +71,7 @@
                     <!--begin::User Image-->
                     <li class="user-header text-bg-primary">
                         <img
-                            src="{{ Auth::user()->avatar ?? asset('assets/img/default-avatar.jpg') }}"
+                            src="{{ Auth::user()->avatar ? asset(Auth::user()->avatar) : asset('assets/img/logo-school.png') }}"
                             class="rounded-circle shadow"
                             alt="User Image" />
                         <p>
@@ -79,27 +79,18 @@
                             <small>
                                 {{ ucfirst(Auth::user()->roles->first()->name ?? 'User') }}
                                 @if(Auth::user()->created_at)
-                                    <br>Member since {{ Auth::user()->created_at->format('M. Y') }}
+                                <br>Member since {{ Auth::user()->created_at->format('M. Y') }}
                                 @endif
                             </small>
                         </p>
                     </li>
                     <!--end::User Image-->
                     <!--begin::Menu Body-->
-                    <li class="user-body">
-                        <div class="row">
-                            <div class="col-6 text-center">
-                                <a href="{{ route('user.edit', Auth::user()->id) }}">Profile</a>
-                            </div>
-                            <div class="col-6 text-center">
-                                <a href="#">Settings</a>
-                            </div>
-                        </div>
-                    </li>
                     <!--end::Menu Body-->
                     <!--begin::Menu Footer-->
                     <li class="user-footer">
-                        <a href="{{ route('user.edit', Auth::user()->id) }}" class="btn btn-default btn-flat">
+                        <!-- Profile link -->
+                        <a href="{{ route('user.profile') }}" class="btn btn-default btn-flat">
                             <i class="bi bi-person"></i> Profile
                         </a>
                         <a href="{{ route('logout') }}" class="btn btn-default btn-flat float-end" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

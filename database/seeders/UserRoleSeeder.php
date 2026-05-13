@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -25,6 +24,7 @@ class UserRoleSeeder extends Seeder
             'name'     => 'Super Admin',
             'email'    => 'admin@sekolah.com',
             'password' => Hash::make('password123'),
+            'role_id' => $adminRole->id,
         ]);
         $admin->assignRole($adminRole);
 
@@ -33,6 +33,7 @@ class UserRoleSeeder extends Seeder
             'name'     => 'Budi Guru',
             'email'    => 'teacher@sekolah.com',
             'password' => Hash::make('password123'),
+            'role_id' => $teacherRole->id,
         ]);
         $teacher->assignRole($teacherRole);
 
@@ -41,6 +42,7 @@ class UserRoleSeeder extends Seeder
             'name'     => 'Siti Staff',
             'email'    => 'staff@sekolah.com',
             'password' => Hash::make('password123'),
+            'role_id' => $staffRole->id,
         ]);
         $staff->assignRole($staffRole);
 
