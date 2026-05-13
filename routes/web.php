@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\Web\Admin\AttendanceTimeSettingController;
 use App\Http\Controllers\Web\Admin\ClassroomController;
+use App\Http\Controllers\Web\Admin\ClassroomScheduleController;
 use App\Http\Controllers\Web\Admin\DashboardController;
 use App\Http\Controllers\Web\Admin\LessonHourController;
 use App\Http\Controllers\Web\Admin\LocationsController;
+use App\Http\Controllers\Web\Admin\MoveClassController;
 use App\Http\Controllers\Web\Admin\RoleAttendanceTimeController;
 use App\Http\Controllers\Web\Admin\StudentsController;
 use App\Http\Controllers\Web\Admin\SubjectController;
@@ -43,6 +45,10 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/teaching-journals', TeachingJournalController::class);
         Route::resource('/user-attendances', UserAttendanceController::class);
 
+        Route::get('/move-class', [MoveClassController::class, 'index'])->name('move-class.index');
+        Route::get('/move-class/get-students', [MoveClassController::class, 'getStudents'])->name('move-class.get-students');
+        Route::post('/move-class/move', [MoveClassController::class, 'moveStudents'])->name('move-class.move');
+
         Route::get('students-data', [StudentsController::class, 'getData'])->name('students.data');
         Route::get('classrooms-data', [ClassroomController::class, 'getData'])->name('classrooms.data');
         Route::get('classrooms-list', [ClassroomController::class, 'getList'])->name('classrooms.list');
@@ -64,8 +70,27 @@ Route::middleware(['auth'])->group(function () {
         Route::get('teaching-schedules-teachers', [TeachingScheduleController::class, 'getTeachers'])->name('teaching-schedules.teachers');
         Route::get('teaching-schedules-lesson-hours', [TeachingScheduleController::class, 'getLessonHours'])->name('teaching-schedules.lesson-hours');
         Route::post('teaching-schedules-check-availability', [TeachingScheduleController::class, 'checkAvailability'])->name('teaching-schedules.check-availability');
+        Route::get('teaching-schedules/classroom/{id}', [TeachingScheduleController::class, 'showByClassroom'])->name('teaching-schedules.by-classroom');
+        Route::get('teaching-schedules/classroom/{id}/data', [TeachingScheduleController::class, 'getScheduleByClassroom'])->name('teaching-schedules.by-classroom.data');
         Route::get('teaching-journals-data', [TeachingJournalController::class, 'getData'])->name('teaching-journals.data');
         Route::get('user-attendances-data', [UserAttendanceController::class, 'getData'])->name('user-attendances.data');
+
+        // Classroom Schedules routes
+        Route::get('/classroom-schedules', [ClassroomScheduleController::class, 'index'])->name('classroom-schedules.index');
+        Route::get('/classroom-schedules/data', [ClassroomScheduleController::class, 'getData'])->name('classroom-schedules.data');
+        Route::get('/classroom-schedules/{id}', [ClassroomScheduleController::class, 'show'])->name('classroom-schedules.show');
+        Route::get('/classroom-schedules/{id}/schedule-data', [ClassroomScheduleController::class, 'getScheduleData'])->name('classroom-schedules.schedule-data');
+
+        // Schedule CRUD
+        Route::post('/classroom-schedules/schedule', [ClassroomScheduleController::class, 'storeSchedule'])->name('classroom-schedules.store-schedule');
+        Route::put('/classroom-schedules/schedule/{id}', [ClassroomScheduleController::class, 'updateSchedule'])->name('classroom-schedules.update-schedule');
+        Route::delete('/classroom-schedules/schedule/{id}', [ClassroomScheduleController::class, 'destroySchedule'])->name('classroom-schedules.destroy-schedule');
+        Route::get('/classroom-schedules/schedule/{id}/edit', [ClassroomScheduleController::class, 'editSchedule'])->name('classroom-schedules.edit-schedule');
+
+        // Supporting routes
+        Route::get('/classroom-schedules/teachers/list', [ClassroomScheduleController::class, 'getTeachers'])->name('classroom-schedules.teachers');
+        Route::get('/classroom-schedules/lesson-hours/list', [ClassroomScheduleController::class, 'getLessonHours'])->name('classroom-schedules.lesson-hours');
+        Route::post('/classroom-schedules/check-availability', [ClassroomScheduleController::class, 'checkAvailability'])->name('classroom-schedules.check-availability');
 
         // User Profile routes
         Route::get('/profile', [UsersController::class, 'profile'])->name('user.profile');

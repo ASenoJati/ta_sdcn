@@ -48,6 +48,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('move-class.index') }}" class="nav-link {{ request()->routeIs('move-class.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-arrow-right-circle"></i>
+                        <p>Pindah & Naik Kelas</p>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('subjects.index') }}" class="nav-link {{ request()->routeIs('subjects.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-book"></i>
                         <p>Data Mata Pelajaran</p>
@@ -62,7 +68,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('teaching-schedules.index') }}" class="nav-link {{ request()->routeIs('teaching-schedules.*') ? 'active' : '' }}">
+                    <a href="{{ route('classroom-schedules.index') }}" class="nav-link {{ request()->routeIs('classroom-schedules.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-calendar-check"></i>
                         <p>Jadwal Mengajar</p>
                     </a>
