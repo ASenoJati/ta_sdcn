@@ -115,7 +115,7 @@
                         <p>Jadwal Aktif</p>
                     </div>
                     <i class="bi bi-calendar-week-fill small-box-icon"></i>
-                    <a href="{{ route('teaching-schedules.index') }}" class="small-box-footer link-light">
+                    <a href="{{ route('classroom-schedules.index') }}" class="small-box-footer link-light">
                         Detail <i class="bi bi-arrow-right-circle"></i>
                     </a>
                 </div>
@@ -283,7 +283,7 @@
                         </div>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="{{ route('teaching-schedules.index') }}" class="btn btn-primary btn-sm">
+                        <a href="{{ route('classroom-schedules.index') }}" class="btn btn-primary btn-sm">
                             Lihat Semua Jadwal <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>

@@ -24,13 +24,13 @@ class TeachingJournalController extends Controller
     public function getData(Request $request)
     {
         try {
-            $journals = TeachingJournal::with(['schedule.teacher', 'schedule.subject', 'schedule.classroom', 'schedule.lessonHour'])
+            $journals = TeachingJournal::with(['teachingSchedule.teacher', 'teachingSchedule.subject', 'teachingSchedule.classroom', 'teachingSchedule.lessonHour'])
                 ->select('teaching_journals.*');
 
             return DataTables::of($journals)
                 ->addIndexColumn()
                 ->addColumn('schedule_info', function ($row) {
-                    $schedule = $row->schedule;
+                    $schedule = $row->teachingSchedule;
                     return '<div>
                         <strong>' . $schedule->subject->name . '</strong><br>
                         <small>Kelas: ' . $schedule->classroom->name . '</small><br>
@@ -64,7 +64,7 @@ class TeachingJournalController extends Controller
                         <button type="button" class="btn btn-info btn-sm me-1" onclick="viewDetail(' . $row->id . ')">
                             <i class="bi bi-eye"></i> Detail
                         </button>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ', \'' . addslashes($row->schedule->subject->name) . ' - ' . $row->date_formatted . '\')">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ', \'' . addslashes($row->teachingSchedule->subject->name) . ' - ' . $row->date_formatted . '\')">
                             <i class="bi bi-trash"></i> Hapus
                         </button>
                     ';
@@ -83,10 +83,10 @@ class TeachingJournalController extends Controller
     public function show($id)
     {
         $journal = TeachingJournal::with([
-            'schedule.teacher',
-            'schedule.subject',
-            'schedule.classroom',
-            'schedule.lessonHour',
+            'teachingSchedule.teacher',
+            'teachingSchedule.subject',
+            'teachingSchedule.classroom',
+            'teachingSchedule.lessonHour',
             'attendances.student'
         ])->findOrFail($id);
 
