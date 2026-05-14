@@ -26,7 +26,9 @@ return new class extends Migration
                 'Friday',
                 'Saturday'
             ]);
+
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique([
                 'user_id',

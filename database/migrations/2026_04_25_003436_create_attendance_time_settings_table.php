@@ -20,6 +20,7 @@ return new class extends Migration
             $table->time('check_out_end')->comment('End time for check-out');
             $table->unsignedInteger('grace_period_minutes')->default(0)->comment('Grace period in minutes for late check-in');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

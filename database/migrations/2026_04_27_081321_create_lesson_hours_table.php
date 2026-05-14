@@ -17,6 +17,7 @@ return new class extends Migration
             $table->time('start_time');
             $table->time('end_time');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['start_time', 'end_time'], 'unique_lesson_hours_time');
             $table->unique('session', 'unique_lesson_hours_session');

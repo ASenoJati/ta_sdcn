@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentAttendance extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'teaching_journal_id',
         'student_id',
