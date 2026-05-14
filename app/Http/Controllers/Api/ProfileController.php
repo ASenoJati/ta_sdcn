@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Location;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,8 +17,11 @@ class ProfileController extends Controller
             'roleAttendance.attendanceTimeSetting'
         ]);
 
-        // Transformasi data agar rapi saat diterima Flutter
+        // Ambil jadwal attendance
         $schedule = $user->roleAttendance?->attendanceTimeSetting;
+
+        // Ambil location default
+        $location = Location::where('default', true)->first();
 
         return response()->json([
             'success' => true,
@@ -29,6 +33,7 @@ class ProfileController extends Controller
                     'email' => $user->email,
                     'role' => $user->role->name,
                 ],
+
                 'schedule' => $schedule ? [
                     'name' => $schedule->name,
                     'check_in_start' => $schedule->check_in_start,
@@ -36,7 +41,17 @@ class ProfileController extends Controller
                     'check_out_start' => $schedule->check_out_start,
                     'check_out_end' => $schedule->check_out_end,
                     'grace_period' => $schedule->grace_period_minutes . ' menit',
-                ] : null
+                ] : null,
+
+                'location' => $location ? [
+                    'id' => $location->id,
+                    'name' => $location->name,
+                    'latitude' => $location->latitude,
+                    'longitude' => $location->longitude,
+                    'radius_km' => $location->radius_km,
+                    'address' => $location->address,
+                    'description' => $location->description,
+                ] : null,
             ]
         ]);
     }
