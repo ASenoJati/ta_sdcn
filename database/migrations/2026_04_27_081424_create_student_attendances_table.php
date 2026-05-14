@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained();
             $table->enum('status', ['hadir', 'izin', 'sakit', 'alpa']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

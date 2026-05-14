@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->foreignId('attendance_time_settings_id')->constrained('attendance_time_settings')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['role_id', 'attendance_time_settings_id'], 'unique_role_attendance');
         });

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('nis')->unique();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
