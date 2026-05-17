@@ -39,7 +39,7 @@ class TeachingScheduleController extends Controller
         try {
             $schedules = TeachingSchedule::with(['teacher', 'subject', 'lessonHour'])
                 ->where('classroom_id', $id)
-                ->orderByRaw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')")
+                ->orderByRaw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")
                 ->orderBy('lesson_hour_id');
 
             return DataTables::of($schedules)
@@ -57,7 +57,8 @@ class TeachingScheduleController extends Controller
                         'Wednesday' => 'warning',
                         'Thursday' => 'info',
                         'Friday' => 'danger',
-                        'Saturday' => 'dark'
+                        'Saturday' => 'dark',
+                        'Sunday' => 'secondary'
                     ];
                     return '<span class="badge bg-' . $dayColors[$row->day] . '">' . $row->day_indonesian . '</span>';
                 })
@@ -113,7 +114,8 @@ class TeachingScheduleController extends Controller
                         'Wednesday' => 'warning',
                         'Thursday' => 'info',
                         'Friday' => 'danger',
-                        'Saturday' => 'dark'
+                        'Saturday' => 'dark',
+                        'Sunday' => 'secondary'
                     ];
                     return '<span class="badge bg-' . $dayColors[$row->day] . '">' . $row->day_indonesian . '</span>';
                 })
@@ -157,7 +159,7 @@ class TeachingScheduleController extends Controller
                 'subject_id' => 'required|exists:subjects,id',
                 'classroom_id' => 'required|exists:classrooms,id',
                 'lesson_hour_id' => 'required|exists:lesson_hours,id',
-                'day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday'
+                'day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday'
             ]);
 
             if ($validator->fails()) {
@@ -252,7 +254,7 @@ class TeachingScheduleController extends Controller
                 'subject_id' => 'required|exists:subjects,id',
                 'classroom_id' => 'required|exists:classrooms,id',
                 'lesson_hour_id' => 'required|exists:lesson_hours,id',
-                'day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday'
+                'day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday'
             ]);
 
             if ($validator->fails()) {
