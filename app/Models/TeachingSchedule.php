@@ -31,7 +31,8 @@ class TeachingSchedule extends Model
         'Wednesday' => 'Rabu',
         'Thursday' => 'Kamis',
         'Friday' => 'Jumat',
-        'Saturday' => 'Sabtu'
+        'Saturday' => 'Sabtu',
+        'Sunday' => 'Minggu',
     ];
 
     public function subject(): BelongsTo

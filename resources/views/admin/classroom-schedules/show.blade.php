@@ -137,6 +137,7 @@
                                 <option value="Thursday">Kamis</option>
                                 <option value="Friday">Jumat</option>
                                 <option value="Saturday">Sabtu</option>
+                                <option value="Sunday">Minggu</option>
                             </select>
                             <div class="invalid-feedback"></div>
                         </div>

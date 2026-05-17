@@ -75,7 +75,7 @@ class ClassroomScheduleController extends Controller
         try {
             $schedules = TeachingSchedule::with(['teacher', 'subject', 'lessonHour'])
                 ->where('classroom_id', $id)
-                ->orderByRaw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')")
+                ->orderByRaw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")
                 ->orderBy('lesson_hour_id');
 
             return DataTables::of($schedules)
@@ -93,7 +93,8 @@ class ClassroomScheduleController extends Controller
                         'Wednesday' => 'warning',
                         'Thursday' => 'info',
                         'Friday' => 'danger',
-                        'Saturday' => 'dark'
+                        'Saturday' => 'dark',
+                        'Sunday' => 'secondary'
                     ];
                     return '<span class="badge bg-' . $dayColors[$row->day] . '">' . $row->day_indonesian . '</span>';
                 })
@@ -121,27 +122,26 @@ class ClassroomScheduleController extends Controller
         }
     }
 
+
     /**
      * Store a newly created schedule.
      */
     public function storeSchedule(Request $request)
     {
         try {
-            Log::info('Store teaching schedule request', ['data' => $request->all()]);
-
             $validator = Validator::make($request->all(), [
                 'user_id' => 'required|exists:users,id',
                 'subject_id' => 'required|exists:subjects,id',
                 'classroom_id' => 'required|exists:classrooms,id',
                 'lesson_hour_id' => 'required|exists:lesson_hours,id',
-                'day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday'
+                'day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday'
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            // Validasi 1: Kelas tidak boleh memiliki 2 mapel di jam yang sama
+            // Validasi konflik
             $classroomConflict = TeachingSchedule::where('classroom_id', $request->classroom_id)
                 ->where('day', $request->day)
                 ->where('lesson_hour_id', $request->lesson_hour_id)
@@ -151,45 +151,24 @@ class ClassroomScheduleController extends Controller
                 return response()->json([
                     'success' => false,
                     'type' => 'classroom_conflict',
-                    'message' => 'Jadwal bentrok! Kelas ini sudah memiliki mata pelajaran pada hari dan jam yang sama.',
-                    'errors' => [
-                        'classroom_id' => ['Kelas ini sudah memiliki jadwal pada hari dan jam yang sama!'],
-                        'lesson_hour_id' => ['Jam pelajaran ini sudah terisi untuk kelas ini di hari yang sama!']
-                    ]
+                    'message' => 'Jadwal bentrok! Kelas ini sudah memiliki mata pelajaran pada hari dan jam yang sama.'
                 ], 422);
             }
 
-            // Validasi 2: Guru tidak boleh mengajar 2 kelas di jam yang sama
             $teacherConflict = TeachingSchedule::where('user_id', $request->user_id)
                 ->where('day', $request->day)
                 ->where('lesson_hour_id', $request->lesson_hour_id)
                 ->exists();
 
             if ($teacherConflict) {
-                $conflictingSchedule = TeachingSchedule::where('user_id', $request->user_id)
-                    ->where('day', $request->day)
-                    ->where('lesson_hour_id', $request->lesson_hour_id)
-                    ->with(['classroom', 'subject'])
-                    ->first();
-
                 return response()->json([
                     'success' => false,
                     'type' => 'teacher_conflict',
-                    'message' => 'Jadwal bentrok! Guru ini sudah mengajar di kelas ' . $conflictingSchedule->classroom->name . ' pada hari dan jam yang sama.',
-                    'errors' => [
-                        'user_id' => ['Guru ini sudah memiliki jadwal mengajar di kelas lain pada hari dan jam yang sama!'],
-                        'lesson_hour_id' => ['Jam pelajaran ini sudah digunakan untuk guru ini di hari yang sama!']
-                    ]
+                    'message' => 'Jadwal bentrok! Guru ini sudah mengajar pada hari dan jam yang sama.'
                 ], 422);
             }
 
-            $schedule = TeachingSchedule::create([
-                'user_id' => $request->user_id,
-                'subject_id' => $request->subject_id,
-                'classroom_id' => $request->classroom_id,
-                'lesson_hour_id' => $request->lesson_hour_id,
-                'day' => $request->day
-            ]);
+            $schedule = TeachingSchedule::create($request->all());
 
             return response()->json([
                 'success' => true,

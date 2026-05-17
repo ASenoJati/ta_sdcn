@@ -127,7 +127,7 @@
                         <i class="bi bi-info-circle me-2"></i>
                         Menambahkan jadwal untuk kelas: <strong>{{ $classroom->name }}</strong>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="user_id" class="form-label">Guru <span class="text-danger">*</span></label>
@@ -157,6 +157,7 @@
                                 <option value="Thursday">Kamis</option>
                                 <option value="Friday">Jumat</option>
                                 <option value="Saturday">Sabtu</option>
+                                <option value="Sunday">Minggu</option>
                             </select>
                             <div class="invalid-feedback"></div>
                         </div>
@@ -277,13 +278,34 @@
                     });
                 }
             },
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'day_indonesian', name: 'day' },
-                { data: 'lesson_time', name: 'lesson_hour.session' },
-                { data: 'subject_name', name: 'subject.name' },
-                { data: 'teacher_name', name: 'teacher.name' },
-                { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'day_indonesian',
+                    name: 'day'
+                },
+                {
+                    data: 'lesson_time',
+                    name: 'lesson_hour.session'
+                },
+                {
+                    data: 'subject_name',
+                    name: 'subject.name'
+                },
+                {
+                    data: 'teacher_name',
+                    name: 'teacher.name'
+                },
+                {
+                    data: 'aksi',
+                    name: 'aksi',
+                    orderable: false,
+                    searchable: false
+                }
             ],
             language: {
                 processing: "<div class='spinner-border text-primary' role='status'></div>",
@@ -303,16 +325,30 @@
                 }
             },
             dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                 "<'row'<'col-sm-12'tr>>" +
-                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
-                 "<'row'<'col-sm-12'B>>",
-            buttons: [
-                { extend: 'excel', text: '<i class="bi bi-file-earmark-excel"></i> Excel', className: 'btn btn-success btn-sm' },
-                { extend: 'pdf', text: '<i class="bi bi-file-earmark-pdf"></i> PDF', className: 'btn btn-danger btn-sm' },
-                { extend: 'print', text: '<i class="bi bi-printer"></i> Print', className: 'btn btn-info btn-sm' }
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
+                "<'row'<'col-sm-12'B>>",
+            buttons: [{
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                    className: 'btn btn-success btn-sm'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                    className: 'btn btn-danger btn-sm'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer"></i> Print',
+                    className: 'btn btn-info btn-sm'
+                }
             ],
             responsive: true,
-            order: [[1, 'asc'], [2, 'asc']]
+            order: [
+                [1, 'asc'],
+                [2, 'asc']
+            ]
         });
 
         // Check schedule conflict on change
@@ -321,7 +357,11 @@
             const day = $('#day').val();
             const lessonHourId = $('#lesson_hour_id').val();
             const scheduleId = $('#schedule_id').val();
-            const classroomId = {{ $classroom->id }};
+            const classroomId = {
+                {
+                    $classroom - > id
+                }
+            };
 
             // Reset conflict status
             hasClassroomConflict = false;
@@ -441,11 +481,15 @@
 
             const id = $('#schedule_id').val();
             const url = id ? "{{ url('admin/teaching-schedules') }}/" + id : "{{ route('teaching-schedules.store') }}";
-            
+
             const formData = {
                 user_id: userId,
                 subject_id: subjectId,
-                classroom_id: {{ $classroom->id }},
+                classroom_id: {
+                    {
+                        $classroom - > id
+                    }
+                },
                 lesson_hour_id: lessonHourId,
                 day: day,
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -583,7 +627,12 @@
                 }, 100);
             },
             error: function() {
-                Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Data tidak ditemukan.', timer: 2000 });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Data tidak ditemukan.',
+                    timer: 2000
+                });
             }
         });
     }
@@ -599,16 +648,28 @@
         $.ajax({
             url: "{{ url('admin/teaching-schedules') }}/" + id,
             type: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
             success: function(response) {
                 if (response.success) {
                     $('#modalHapus').modal('hide');
                     dataTable.ajax.reload();
-                    Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000 });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message,
+                        timer: 2000
+                    });
                 }
             },
             error: function() {
-                Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.', timer: 3000 });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan.',
+                    timer: 3000
+                });
             }
         });
     }

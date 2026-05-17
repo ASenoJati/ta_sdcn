@@ -24,7 +24,8 @@ return new class extends Migration
                 'Wednesday',
                 'Thursday',
                 'Friday',
-                'Saturday'
+                'Saturday',
+                'Sunday'
             ]);
 
             $table->timestamps();
