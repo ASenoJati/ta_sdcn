@@ -25,6 +25,21 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
+        <!-- Flash Messages -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
@@ -33,6 +48,10 @@
                             <i class="bi bi-people-fill me-2"></i> Daftar Siswa Kelas {{ $classroom->name }}
                         </h3>
                         <div class="card-tools">
+                            <!-- Tombol Import Excel -->
+                            <button type="button" class="btn btn-success btn-sm me-1" data-bs-toggle="modal" data-bs-target="#importModal">
+                                <i class="bi bi-file-earmark-excel"></i> Import Excel
+                            </button>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalStudent" onclick="resetForm()">
                                 <i class="bi bi-plus-circle"></i> Tambah Siswa
                             </button>
@@ -64,7 +83,7 @@
 </div>
 <!--end::App Content-->
 
-<!-- Modal Form Student -->
+<!-- Modal Form Student (sudah ada) -->
 <div class="modal fade" id="modalStudent" tabindex="-1" aria-labelledby="modalStudentLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -101,7 +120,43 @@
     </div>
 </div>
 
-<!-- Modal Hapus -->
+<!-- Modal Import Excel (BARU) -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('classrooms.students.import', $classroom->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Data Siswa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Pilih File Excel (.xlsx, .xls, .csv)</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">
+                            <strong>Format wajib:</strong>
+                            <ul>
+                                <li>Baris pertama harus <strong>HEADER</strong> (nama, nis, nisn, jenis_kelamin, no_hp, email, alamat)</li>
+                                <li>Kolom <strong>nama</strong> dan <strong>nis</strong> wajib diisi</li>
+                            </ul>
+                            <!-- Link download template (opsional) -->
+                            <a href="{{ route('classrooms.students.template') }}" class="text-primary" target="_blank">Download template contoh</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-upload"></i> Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus (sudah ada) -->
 <div class="modal fade" id="modalHapus" tabindex="-1" aria-labelledby="modalHapusLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -167,6 +222,7 @@ $(document).ready(function() {
         ]
     });
 
+    // Form tambah/edit siswa (sudah ada)
     $('#studentForm').on('submit', function(e) {
         e.preventDefault();
         const id = $('#student_id').val();
@@ -205,8 +261,17 @@ $(document).ready(function() {
             }
         });
     });
+
+    // (Opsional) Download template - jika route sudah dibuat
+    $('#downloadTemplate').on('click', function(e) {
+        e.preventDefault();
+        // Ganti dengan route download template jika sudah dibuat
+        // window.location.href = "{{ route('classrooms.students.template') }}";
+        alert('Fitur download template akan segera tersedia. Anda bisa membuatnya dengan langkah opsional di dokumentasi.');
+    });
 });
 
+// Fungsi edit, hapus, reset (sudah ada)
 function editStudent(id) {
     $.ajax({
         url: "{{ url('admin/students') }}/" + id + "/edit",

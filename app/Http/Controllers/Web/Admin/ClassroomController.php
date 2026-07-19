@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Exports\StudentsTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\StudentsImport;
 use App\Models\Classroom;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelContract;  // import interface
+
 
 class ClassroomController extends Controller
 {
@@ -61,6 +66,43 @@ class ClassroomController extends Controller
         } catch (\Exception $e) {
             Log::error('DataTables Error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function downloadTemplate(ExcelContract $excel)
+    {
+        return $excel->download(new StudentsTemplateExport, 'template_siswa.xlsx');
+    }
+
+    /**
+     * Import students from Excel file.
+     */
+    public function importStudents(Request $request, $id)
+    {
+        // Validasi file
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120' // maksimal 5MB
+        ]);
+
+        // Cari kelas
+        $classroom = Classroom::findOrFail($id);
+
+        try {
+            // Proses import
+            Excel::import(new StudentsImport($classroom->id), $request->file('file'));
+
+            return redirect()->route('classrooms.students', $id)
+                ->with('success', 'Data siswa berhasil diimport!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            // Tangkap error validasi dari Excel
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            return redirect()->back()->with('error', 'Gagal import: ' . implode(' | ', $errors));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
