@@ -96,6 +96,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profile', [UsersController::class, 'profile'])->name('user.profile');
         Route::post('/profile/update', [UsersController::class, 'updateProfile'])->name('user.update-profile');
         Route::post('/profile/update-password', [UsersController::class, 'updatePassword'])->name('user.update-password');
+
+        // Tambahkan route import di bawah resource classrooms
+        Route::post('classrooms/{id}/students/import', [ClassroomController::class, 'importStudents'])
+            ->name('classrooms.students.import');
+
+        Route::get('classrooms/students/template', [ClassroomController::class, 'downloadTemplate'])
+            ->name('classrooms.students.template');
     });
 
     // Route Khusus Teacher
