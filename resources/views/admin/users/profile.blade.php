@@ -24,6 +24,18 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
+       @if(!$user->hasVerifiedEmail())
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Alamat email Anda <strong>{{ $user->email }}</strong> belum diverifikasi. 
+            <a href="#" id="resendVerificationLink" class="alert-link">Kirim ulang verifikasi</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+@endif
         <div class="row">
             <div class="col-md-4">
                 <!-- Profile Image Card -->
@@ -186,30 +198,38 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Update profile
-    function updateProfile() {
-        const formData = new FormData(document.getElementById('profileForm'));
-        
-        // Show loading
-        Swal.fire({
-            title: 'Menyimpan...',
-            text: 'Mohon tunggu sebentar',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        fetch('{{ route("user.update-profile") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+   function updateProfile() {
+    const formData = new FormData(document.getElementById('profileForm'));
+    
+    Swal.fire({
+        title: 'Menyimpan...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch('{{ route("user.update-profile") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.requires_verification) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Periksa Email Anda',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
@@ -219,22 +239,71 @@
                 }).then(() => {
                     location.reload();
                 });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: data.message
-                });
             }
-        })
-        .catch(error => {
+        } else {
             Swal.fire({
                 icon: 'error',
-                title: 'Error!',
-                text: 'Terjadi kesalahan. Silakan coba lagi.'
+                title: 'Gagal!',
+                text: data.message
             });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Terjadi kesalahan. Silakan coba lagi.'
         });
-    }
+    });
+}
+
+document.getElementById('resendVerificationLink')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    Swal.fire({
+        title: 'Mengirim ulang...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch('{{ route('verification.send') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(({ status, body }) => {
+        if (status === 200 && body.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: body.message,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: body.message || 'Terjadi kesalahan. Silakan coba lagi.'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: 'Terjadi kesalahan jaringan. Silakan coba lagi.'
+        });
+    });
+});
     
     // Update password
     function updatePassword() {

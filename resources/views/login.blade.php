@@ -70,7 +70,7 @@
 
                 <div class="social-auth-links text-center mb-3 d-grid gap-2 mt-4">
                     <p class="mb-2 text-muted">- ATAU -</p>
-                    <a href="#" class="btn btn-danger" id="googleLoginBtn">
+                    <a href="{{ route('login.google') }}" class="btn btn-danger" id="googleLoginBtn">
                         <i class="bi bi-google me-2"></i> Sign in using Google+
                     </a>
                 </div>
@@ -224,19 +224,19 @@
         }
         
         // Google Login demo alert
-        const googleBtn = document.getElementById('googleLoginBtn');
-        if (googleBtn) {
-            googleBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Fitur Google Login',
-                    text: 'Fitur ini akan segera tersedia!',
-                    confirmButtonColor: '#007bff',
-                    timer: 2000
-                });
-            });
-        }
+        // const googleBtn = document.getElementById('googleLoginBtn');
+        // if (googleBtn) {
+        //     googleBtn.addEventListener('click', function(e) {
+        //         e.preventDefault();
+        //         Swal.fire({
+        //             icon: 'info',
+        //             title: 'Fitur Google Login',
+        //             text: 'Fitur ini akan segera tersedia!',
+        //             confirmButtonColor: '#007bff',
+        //             timer: 2000
+        //         });
+        //     });
+        // }
     </script>
 </body>
 @endsection
