@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,7 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasRoles, HasFactory, Notifiable;
+    use HasApiTokens, HasRoles, HasFactory, Notifiable, CanResetPassword;
 
     protected $guard_name = 'web';
 
@@ -66,5 +69,10 @@ class User extends Authenticatable
     public function attendances()
     {
         return $this->hasMany(UserAttendance::class, 'user_id');
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
