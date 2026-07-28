@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\Admin\AttendanceTimeSettingController;
 use App\Http\Controllers\Web\Admin\ClassroomController;
@@ -17,9 +18,12 @@ use App\Http\Controllers\Web\Admin\TeachingScheduleController;
 use App\Http\Controllers\Web\Admin\UserAttendanceController;
 use App\Http\Controllers\Web\Admin\UsersController;
 use App\Http\Controllers\Web\AuthController;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -40,6 +44,41 @@ Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showRese
 
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
     ->name('password.update');
+
+// Route Login with Google
+Route::get('/login/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('/login/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/admin/dashboard')->with('verified', 'Email berhasil diverifikasi!');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    try {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User tidak ditemukan.'], 401);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Link verifikasi telah dikirim ulang ke email Anda.'
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Send verification error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim verifikasi: ' . $e->getMessage()
+        ], 500);
+    }
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 Route::middleware(['auth'])->group(function () {
 

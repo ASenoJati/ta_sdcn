@@ -266,8 +266,16 @@ class UsersController extends Controller
         try {
             $data = [
                 'name' => $request->name,
-                'email' => $request->email,
             ];
+
+            // Cek apakah email berubah
+            $emailChanged = $user->email !== $request->email;
+
+            if ($emailChanged) {
+                $data['email'] = $request->email;
+                // Reset verifikasi karena email baru
+                $data['email_verified_at'] = null;
+            }
 
             // Handle avatar upload
             if ($request->hasFile('avatar')) {
@@ -284,12 +292,25 @@ class UsersController extends Controller
 
             $user->update($data);
 
+            // Jika email berubah, kirim notifikasi verifikasi
+            if ($emailChanged) {
+                $user->sendEmailVerificationNotification();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Profil berhasil diperbarui! Silakan cek email baru Anda untuk verifikasi.',
+                    'requires_verification' => true,
+                    'user' => $user
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Profil berhasil diperbarui!',
                 'user' => $user
             ]);
         } catch (\Exception $e) {
+            Log::error('Profile update error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
