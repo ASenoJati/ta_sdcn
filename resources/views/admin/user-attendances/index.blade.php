@@ -41,7 +41,7 @@
                                         <th>Tanggal & Waktu</th>
                                         <th>Status</th>
                                         <th>Durasi</th>
-                                        <th>Dibuat</th>
+                                        {{-- <th>Dibuat</th> --}}
                                         <th width="15%">Aksi</th>
                                     </tr>
                                 </thead>
@@ -195,7 +195,7 @@ $(document).ready(function() {
             { data: 'attendance_info', name: 'attendance_date' },
             { data: 'status_info', name: 'check_in_status' },
             { data: 'duration', name: 'duration', orderable: false },
-            { data: 'created_at_formatted', name: 'created_at' },
+            // { data: 'created_at_formatted', name: 'created_at' },
             { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
         ],
         language: {
