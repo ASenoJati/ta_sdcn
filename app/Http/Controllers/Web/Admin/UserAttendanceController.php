@@ -37,7 +37,7 @@ class UserAttendanceController extends Controller
                 })
                 ->addColumn('attendance_info', function ($row) {
                     return '<div>
-                        <strong>' . $row->attendance_date_formatted . '</strong><br>
+                        <strong>' . $row->created_at->translatedFormat('d F Y') . '</strong><br>
                         <small>Check-in: ' . $row->check_in_time_formatted . '</small><br>
                         <small>Check-out: ' . $row->check_out_time_formatted . '</small>
                     </div>';
@@ -51,9 +51,9 @@ class UserAttendanceController extends Controller
                 ->addColumn('duration', function ($row) {
                     return '<span class="badge bg-primary">' . $row->work_duration . '</span>';
                 })
-                ->addColumn('created_at_formatted', function ($row) {
-                    return $row->created_at->translatedFormat('d F Y H:i');
-                })
+                // ->addColumn('created_at_formatted', function ($row) {
+                //     return $row->created_at->translatedFormat('d F Y H:i');
+                // })
                 ->addColumn('aksi', function ($row) {
                     return '
                         <button type="button" class="btn btn-info btn-sm me-1" onclick="viewDetail(' . $row->id . ')">
