@@ -46,7 +46,7 @@ class RoleAttendanceTimeController extends Controller
                     return $setting->check_out_start . ' - ' . $setting->check_out_end;
                 })
                 ->addColumn('created_at_formatted', function ($row) {
-                    return $row->created_at->format('d/m/Y H:i');
+                    return $row->created_at->translatedFormat('d F Y H:i');
                 })
                 ->addColumn('aksi', function ($row) {
                     return '

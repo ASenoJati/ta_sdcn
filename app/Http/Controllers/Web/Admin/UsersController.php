@@ -43,7 +43,7 @@ class UsersController extends Controller
                     return '<span class="badge bg-warning">Unverified</span>';
                 })
                 ->addColumn('created_at_formatted', function ($row) {
-                    return $row->created_at->format('d/m/Y H:i');
+                    return $row->created_at->translatedFormat('d F Y H:i');
                 })
                 ->addColumn('aksi', function ($row) {
                     return '
