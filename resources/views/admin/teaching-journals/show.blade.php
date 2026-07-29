@@ -240,6 +240,8 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    console.log('DATA', {!! json_encode($journal) !!});
+
     function confirmDelete(id) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
