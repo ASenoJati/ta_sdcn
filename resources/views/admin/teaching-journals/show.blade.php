@@ -55,9 +55,15 @@
                                 <td>{{ $journal->teachingSchedule->teacher->name ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <th>Jam Pelajaran</th>
-                                <td>{{ $journal->teachingSchedule->lessonHour->time_start ?? '-' }} - {{ $journal->teachingSchedule->lessonHour->time_end ?? '-' }}</td>
-                            </tr>
+    <th>Jam Pelajaran</th>
+    <td>
+        @if($journal->teachingSchedule && $journal->teachingSchedule->lessonHour)
+            {{ $journal->teachingSchedule->lessonHour->time_start ?? '-' }} - {{ $journal->teachingSchedule->lessonHour->time_end ?? '-' }}
+        @else
+            <span class="text-muted">Belum diatur</span>
+        @endif
+    </td>
+</tr>
                             <tr>
                                 <th>Materi</th>
                                 <td>{{ $journal->material ?? '-' }}</td>
@@ -240,18 +246,15 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    console.log('DATA', {!! json_encode($journal) !!});
-
-    console.log('Jam Pelajaran', {!! json_encode($journal->class_schedule) !!});
-
+    // Fungsi konfirmasi hapus dengan SweetAlert2
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: "Menghapus jurnal juga akan menghapus semua data presensi siswa!",
+            title: 'Konfirmasi Hapus',
+            text: 'Apakah Anda yakin ingin menghapus jurnal pembelajaran ini? Menghapus jurnal juga akan menghapus semua data presensi siswa!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            cancelButtonColor: '#6c757d',
             confirmButtonText: 'Ya, hapus!',
             cancelButtonText: 'Batal'
         }).then((result) => {
@@ -261,7 +264,9 @@
         });
     }
 
+    // Fungsi untuk menghapus jurnal
     function deleteJournal(id) {
+        // Tampilkan loading
         Swal.fire({
             title: 'Menghapus...',
             text: 'Mohon tunggu sebentar',
@@ -271,6 +276,7 @@
             }
         });
 
+        // Kirim request DELETE dengan fetch
         fetch("{{ url('admin/teaching-journals') }}/" + id, {
             method: 'DELETE',
             headers: {
