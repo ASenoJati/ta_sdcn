@@ -47,7 +47,7 @@
                         <p>Total Siswa</p>
                     </div>
                     <i class="bi bi-people-fill small-box-icon"></i>
-                    <a href="{{ route('students.index') }}" class="small-box-footer link-light">
+                    <a href="{{ route('classrooms.index') }}" class="small-box-footer link-light">
                         Detail <i class="bi bi-arrow-right-circle"></i>
                     </a>
                 </div>
