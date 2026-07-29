@@ -103,16 +103,19 @@ class HeaderComposer
             ];
         }
 
-        // Jurnal baru
-        $recentJournals = TeachingJournal::with('teachingSchedule.subject')
+        // Jurnal baru - DIPERBAIKI
+        $recentJournals = TeachingJournal::with(['teachingSchedule.subject'])
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get();
 
         foreach ($recentJournals as $journal) {
+            $subjectName = $journal->teachingSchedule?->subject?->name ?? 'Mata Pelajaran tidak tersedia';
+            $dateFormatted = $journal->date ? $journal->date->format('d/m/Y') : '-';
+
             $notifications[] = [
                 'icon' => 'bi-journal-bookmark-fill',
-                'message' => 'Jurnal baru: ' . $journal->teachingSchedule->subject->name . ' (' . $journal->date->format('d/m/Y') . ')',
+                'message' => 'Jurnal baru: ' . $subjectName . ' (' . $dateFormatted . ')',
                 'time' => $journal->created_at->diffForHumans(),
                 'link' => route('teaching-journals.index')
             ];

@@ -188,7 +188,21 @@ class DashboardController extends Controller
             ->where('day', $todayName)
             ->orderBy('lesson_hour_id')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($schedule) {
+                // Gunakan null-safe operator untuk semua relasi
+                return (object) [
+                    'id' => $schedule->id,
+                    'teacher_name' => $schedule->teacher?->name ?? '-',
+                    'subject_name' => $schedule->subject?->name ?? '-',
+                    'classroom_name' => $schedule->classroom?->name ?? '-',
+                    'lesson_hour' => $schedule->lessonHour ?
+                        $schedule->lessonHour->start_time . ' - ' . $schedule->lessonHour->end_time :
+                        '-',
+                    'day' => $schedule->day,
+                    'original' => $schedule
+                ];
+            });
     }
 
     /**
@@ -213,16 +227,18 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Recent journals
-        $recentJournals = TeachingJournal::with('teachingSchedule.subject')
+        // Recent journals - DIPERBAIKI dengan null-safe operator
+        $recentJournals = TeachingJournal::with(['teachingSchedule.subject', 'teachingSchedule.teacher'])
             ->latest('created_at')
             ->limit(5)
             ->get()
             ->map(function ($item) {
+                // Gunakan null-safe operator untuk menghindari error
+                $subjectName = $item->teachingSchedule?->subject?->name ?? 'Mata Pelajaran tidak tersedia';
                 return [
                     'type' => 'journal',
                     'title' => 'Jurnal Pembelajaran',
-                    'description' => 'Jurnal ' . $item->teachingSchedule->subject->name . ' ditambahkan',
+                    'description' => 'Jurnal ' . $subjectName . ' ditambahkan',
                     'time' => $item->created_at->diffForHumans(),
                     'created_at' => $item->created_at,
                     'icon' => 'bi-journal-bookmark-fill',
