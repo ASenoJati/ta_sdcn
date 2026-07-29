@@ -57,10 +57,10 @@
 
                         <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
-                                <b>Email</b> <a class="float-end">{{ $user->email }}</a>
+                                <b>Email</b> <a class="float-end text-decoration-none text-reset">{{ $user->email }}</a>
                             </li>
                             <li class="list-group-item">
-                                <b>Member Since</b> <a class="float-end">{{ $user->created_at->format('d F Y') }}</a>
+                                <b>Member Since</b> <a class="float-end text-decoration-none text-reset">{{ $user->created_at->translatedFormat('d F Y') }}</a>
                             </li>
                             <li class="list-group-item">
                                 <b>Status</b> 

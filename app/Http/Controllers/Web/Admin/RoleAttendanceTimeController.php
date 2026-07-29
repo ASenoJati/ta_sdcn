@@ -38,12 +38,12 @@ class RoleAttendanceTimeController extends Controller
                 })
                 ->addColumn('check_in_time', function ($row) {
                     $setting = $row->attendanceTimeSetting;
-                    $grace = $setting->grace_period_minutes > 0 ? ' (Grace period: ' . $setting->grace_period_minutes . ' menit)' : '';
-                    return $setting->check_in_start . ' - ' . $setting->check_in_end . $grace;
+                    $grace = $setting->grace_period_minutes > 0 ? ' (Waktu tenggang: ' . $setting->grace_period_minutes . ' menit)' : '';
+                    return $setting->check_in_start->translatedFormat('H:i') . ' - ' . $setting->check_in_end->translatedFormat('H:i') . $grace;
                 })
                 ->addColumn('check_out_time', function ($row) {
                     $setting = $row->attendanceTimeSetting;
-                    return $setting->check_out_start . ' - ' . $setting->check_out_end;
+                    return $setting->check_out_start->translatedFormat('H:i') . ' - ' . $setting->check_out_end->translatedFormat('H:i');
                 })
                 ->addColumn('created_at_formatted', function ($row) {
                     return $row->created_at->translatedFormat('d F Y H:i');
