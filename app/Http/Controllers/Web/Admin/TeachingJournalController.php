@@ -61,13 +61,13 @@ class TeachingJournalController extends Controller
                 })
                 ->addColumn('aksi', function ($row) {
                     return '
-                        <button type="button" class="btn btn-info btn-sm me-1" onclick="viewDetail(' . $row->id . ')">
-                            <i class="bi bi-eye"></i> Detail
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ', \'' . addslashes($row->teachingSchedule->subject->name) . ' - ' . $row->date_formatted . '\')">
-                            <i class="bi bi-trash"></i> Hapus
-                        </button>
-                    ';
+        <a href="' . route('teaching-journals.show', $row->id) . '" class="btn btn-info btn-sm me-1">
+            <i class="bi bi-eye"></i> Detail
+        </a>
+        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ', \'' . addslashes($row->id) . '\')">
+            <i class="bi bi-trash"></i>
+        </button>
+    ';
                 })
                 ->rawColumns(['schedule_info', 'date_info', 'attendance_summary', 'aksi'])
                 ->make(true);
@@ -78,7 +78,7 @@ class TeachingJournalController extends Controller
     }
 
     /**
-     * Display the specified resource with details.
+     * Display the specified teaching journal.
      */
     public function show($id)
     {
@@ -90,7 +90,7 @@ class TeachingJournalController extends Controller
             'attendances.student'
         ])->findOrFail($id);
 
-        return response()->json($journal);
+        return view('admin.teaching-journals.show', compact('journal'));
     }
 
     /**
