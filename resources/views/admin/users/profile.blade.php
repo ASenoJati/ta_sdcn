@@ -41,13 +41,20 @@
                 <!-- Profile Image Card -->
                 <div class="card card-primary card-outline">
                     <div class="card-body box-profile">
-                        <div class="text-center">
-                            <img class="profile-user-img img-fluid img-circle"
-                                 src="{{ $user->avatar ? asset($user->avatar) : asset('assets/img/logo-school.png') }}"
-                                 alt="User profile picture"
-                                 id="profileImage"
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
+                      <div class="text-center">
+    <img class="profile-user-img img-fluid img-circle"
+         src="{{ $user->avatar ? Storage::url($user->avatar) : asset('assets/img/logo-school.png') }}"
+         alt="User profile picture"
+         id="profileImage"
+         style="width: 150px; height: 150px; object-fit: cover;">
+    <br>
+    <!-- Tombol Hapus Avatar -->
+    @if($user->avatar)
+        <button type="button" class="btn btn-danger btn-sm mt-2 mb-3" id="deleteAvatarBtn">
+            <i class="bi bi-trash"></i> Hapus Foto
+        </button>
+    @endif
+</div>
 
                         <h3 class="profile-username text-center">{{ $user->name }}</h3>
 
@@ -414,5 +421,67 @@ document.getElementById('resendVerificationLink')?.addEventListener('click', fun
             reader.readAsDataURL(file);
         }
     });
+
+    // Hapus Avatar
+document.getElementById('deleteAvatarBtn')?.addEventListener('click', function() {
+    Swal.fire({
+        title: 'Hapus Avatar?',
+        text: "Anda yakin ingin menghapus foto profil?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Menghapus...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('{{ route("user.delete-avatar") }}', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan. Silakan coba lagi.'
+                });
+            });
+        }
+    });
+});
 </script>
 @endpush

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class UsersController extends Controller
 {
@@ -264,38 +265,31 @@ class UsersController extends Controller
         }
 
         try {
-            $data = [
-                'name' => $request->name,
-            ];
+            $data = ['name' => $request->name];
 
-            // Cek apakah email berubah
+            // Cek perubahan email
             $emailChanged = $user->email !== $request->email;
-
             if ($emailChanged) {
                 $data['email'] = $request->email;
-                // Reset verifikasi karena email baru
                 $data['email_verified_at'] = null;
             }
 
-            // Handle avatar upload
+            // Handle avatar upload ke storage
             if ($request->hasFile('avatar')) {
-                $avatar = $request->file('avatar');
-                $avatarName = time() . '_' . $avatar->getClientOriginalName();
-                $avatar->move(public_path('uploads/avatars'), $avatarName);
-                $data['avatar'] = 'uploads/avatars/' . $avatarName;
-
-                // Delete old avatar if exists
-                if ($user->avatar && file_exists(public_path($user->avatar))) {
-                    unlink(public_path($user->avatar));
+                // Hapus avatar lama jika ada
+                if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                    Storage::disk('public')->delete($user->avatar);
                 }
+
+                // Simpan avatar baru
+                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+                $data['avatar'] = $avatarPath; // Simpan path: "avatars/nama_file.jpg"
             }
 
             $user->update($data);
 
-            // Jika email berubah, kirim notifikasi verifikasi
             if ($emailChanged) {
                 $user->sendEmailVerificationNotification();
-
                 return response()->json([
                     'success' => true,
                     'message' => 'Profil berhasil diperbarui! Silakan cek email baru Anda untuk verifikasi.',
@@ -357,6 +351,43 @@ class UsersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete user avatar.
+     */
+    public function deleteAvatar(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->avatar) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada avatar yang dihapus.'
+            ], 400);
+        }
+
+        try {
+            // Hapus file dari storage
+            if (Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Update database
+            $user->avatar = null;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Avatar berhasil dihapus!'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Delete avatar error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus avatar.'
             ], 500);
         }
     }
