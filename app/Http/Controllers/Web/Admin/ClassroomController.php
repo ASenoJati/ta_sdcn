@@ -119,9 +119,9 @@ class ClassroomController extends Controller
                 ->addColumn('students_count', function ($row) {
                     return '<span class="badge bg-primary">' . $row->students_count . ' Siswa</span>';
                 })
-                ->addColumn('description_short', function ($row) {
-                    return \Str::limit($row->description, 50) ?? '-';
-                })
+                // ->addColumn('description_short', function ($row) {
+                //     return \Str::limit($row->description, 50) ?? '-';
+                // })
                 ->addColumn('created_at_formatted', function ($row) {
                     return $row->created_at->translatedFormat('d F Y H:i');
                 })

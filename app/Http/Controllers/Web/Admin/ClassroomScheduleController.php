@@ -37,9 +37,9 @@ class ClassroomScheduleController extends Controller
                     $color = $count > 0 ? 'success' : 'warning';
                     return '<span class="badge bg-' . $color . '">' . $count . ' Jadwal</span>';
                 })
-                ->addColumn('description_short', function ($row) {
-                    return \Str::limit($row->description, 50) ?? '-';
-                })
+                // ->addColumn('description_short', function ($row) {
+                //     return \Str::limit($row->description, 50) ?? '-';
+                // })
                 ->addColumn('created_at_formatted', function ($row) {
                     return $row->created_at->translatedFormat('d F Y H:i');
                 })

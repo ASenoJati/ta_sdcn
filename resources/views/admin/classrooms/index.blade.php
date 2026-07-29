@@ -42,7 +42,7 @@
                                     <tr>
                                         <th width="5%">No</th>
                                         <th>Nama Kelas</th>
-                                        <th>Deskripsi</th>
+                                        {{-- <th>Deskripsi</th> --}}
                                         <th>Jumlah Siswa</th>
                                         <th>Tanggal Dibuat</th>
                                         <th width="20%">Aksi</th>
@@ -140,7 +140,7 @@ $(document).ready(function() {
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'name', name: 'name' },
-            { data: 'description_short', name: 'description' },
+            // { data: 'description_short', name: 'description' },
             { data: 'students_count', name: 'students_count' },
             { data: 'created_at_formatted', name: 'created_at' },
             { data: 'aksi', name: 'aksi', orderable: false, searchable: false }

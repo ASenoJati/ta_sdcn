@@ -350,7 +350,7 @@
         
         <!-- Quick Stats Cards -->
         <div class="row mt-4 mb-2">
-            <div class="col-lg-4">
+            <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Ringkasan Presensi Hari Ini</h3>
@@ -376,7 +376,7 @@
                 </div>
             </div>
             
-            <div class="col-lg-4">
+            <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Ringkasan Jurnal</h3>
@@ -398,7 +398,7 @@
                 </div>
             </div>
             
-            <div class="col-lg-4">
+            {{-- <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Info Sistem</h3>
@@ -418,7 +418,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
         
     </div>

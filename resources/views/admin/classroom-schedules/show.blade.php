@@ -9,7 +9,7 @@
             <div class="col-sm-6">
                 <h3 class="mb-0">
                     <i class="bi bi-calendar-week-fill me-2"></i>
-                    Jadwal Kelas {{ $classroom->name }}
+                    Jadwal {{ $classroom->name }}
                 </h3>
             </div>
             <div class="col-sm-6">
@@ -38,13 +38,13 @@
                             <div class="col-md-6">
                                 <table class="table table-borderless">
                                     <tr><th width="150">Nama Kelas</th><td>: <strong>{{ $classroom->name }}</strong></td></tr>
-                                    <tr><th>Deskripsi</th><td>: {{ $classroom->description ?? '-' }}</td></tr>
+                                    {{-- <tr><th>Deskripsi</th><td>: {{ $classroom->description ?? '-' }}</td></tr> --}}
                                 </table>
                             </div>
                             <div class="col-md-6">
                                 <table class="table table-borderless">
-                                    <tr><th width="150">Dibuat Pada</th><td>: {{ $classroom->created_at->format('d/m/Y H:i') }}</td></tr>
-                                    <tr><th>Terakhir Update</th><td>: {{ $classroom->updated_at->format('d/m/Y H:i') }}</td></tr>
+                                    <tr><th width="150">Dibuat Pada</th><td>: {{ $classroom->created_at->translatedFormat('d F Y H:i') }}</td></tr>
+                                    <tr><th>Terakhir Update</th><td>: {{ $classroom->updated_at->translatedFormat('d F Y H:i') }}</td></tr>
                                 </table>
                             </div>
                         </div>
