@@ -242,6 +242,8 @@
 <script>
     console.log('DATA', {!! json_encode($journal) !!});
 
+    console.log('Jam Pelajaran', {!! json_encode($journal->class_schedule) !!});
+
     function confirmDelete(id) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
