@@ -21,9 +21,7 @@
     </div>
 </div>
 <!--end::App Content Header-->
-@php
-    Log::info('DATA', ['journal' => $journal])
-@endphp
+
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
@@ -37,51 +35,51 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                      <table class="table table-bordered">
-    <tr>
-        <th width="200">Hari / Tanggal</th>
-        <td>{{ $journal->day_name }} - {{ $journal->date_formatted }}</td>
-    </tr>
-    <tr>
-        <th>Mata Pelajaran</th>
-        <td>{{ $journal->teachingSchedule->subject->name ?? '-' }}</td>
-    </tr>
-    <tr>
-        <th>Kelas</th>
-        <td>{{ $journal->teachingSchedule->classroom->name ?? '-' }}</td>
-    </tr>
-    <tr>
-        <th>Guru</th>
-        <td>{{ $journal->teachingSchedule->teacher->name ?? '-' }}</td>
-    </tr>
-    <tr>
-        <th>Jam Pelajaran</th>
-        <td>
-            @if($journal->teachingSchedule && $journal->teachingSchedule->lessonHour)
-                {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->start_time)->format('H:i') }} - 
-                {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->end_time)->format('H:i') }}
-            @else
-                -
-            @endif
-        </td>
-    </tr>
-    <tr>
-        <th>Materi</th>
-        <td>{{ $journal->material ?? '-' }}</td>
-    </tr>
-    <tr>
-        <th>Refleksi</th>
-        <td>{{ $journal->reflection ?? '-' }}</td>
-    </tr>
-    <tr>
-        <th>Dibuat</th>
-        <td>{{ $journal->created_at->translatedFormat('d F Y H:i') }}</td>
-    </tr>
-    <tr>
-        <th>Terakhir Diupdate</th>
-        <td>{{ $journal->updated_at->translatedFormat('d F Y H:i') }}</td>
-    </tr>
-</table>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th width="200">Hari / Tanggal</th>
+                                <td>{{ $journal->day_name }} - {{ $journal->date_formatted }}</td>
+                            </tr>
+                            <tr>
+                                <th>Mata Pelajaran</th>
+                                <td>{{ $journal->teachingSchedule->subject->name ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Kelas</th>
+                                <td>{{ $journal->teachingSchedule->classroom->name ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Guru</th>
+                                <td>{{ $journal->teachingSchedule->teacher->name ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Jam Pelajaran</th>
+                                <td>
+                                    @if($journal->teachingSchedule && $journal->teachingSchedule->lessonHour)
+                                    {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->start_time)->format('H:i') }} -
+                                    {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->end_time)->format('H:i') }}
+                                    @else
+                                    -
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Materi</th>
+                                <td>{{ $journal->material ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Refleksi</th>
+                                <td>{{ $journal->reflection ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Dibuat</th>
+                                <td>{{ $journal->created_at->translatedFormat('d F Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Terakhir Diupdate</th>
+                                <td>{{ $journal->updated_at->translatedFormat('d F Y H:i') }}</td>
+                            </tr>
+                        </table>
                     </div>
                     <div class="card-footer">
                         <a href="{{ route('teaching-journals.index') }}" class="btn btn-secondary">
@@ -104,7 +102,7 @@
                     </div>
                     <div class="card-body">
                         @php
-                            $summary = $journal->attendance_summary;
+                        $summary = $journal->attendance_summary;
                         @endphp
                         <div class="row text-center">
                             <div class="col-6">
@@ -155,7 +153,7 @@
 
         <!-- Tabel Daftar Presensi Siswa -->
         <div class="row">
-            <div class="col-12">
+            <div class="col-12 mt-4">
                 <div class="card card-info">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -176,35 +174,35 @@
                                 </thead>
                                 <tbody>
                                     @forelse($journal->attendances as $index => $attendance)
-                                        <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $attendance->student->nis ?? '-' }}</td>
-                                            <td>{{ $attendance->student->name ?? '-' }}</td>
-                                            <td>
-                                                @php
-                                                    $statusMap = [
-                                                        'hadir' => 'success',
-                                                        'izin' => 'warning',
-                                                        'sakit' => 'info',
-                                                        'alpa' => 'danger'
-                                                    ];
-                                                    $labelMap = [
-                                                        'hadir' => 'Hadir',
-                                                        'izin' => 'Izin',
-                                                        'sakit' => 'Sakit',
-                                                        'alpa' => 'Alpa'
-                                                    ];
-                                                @endphp
-                                                <span class="badge bg-{{ $statusMap[$attendance->status] ?? 'secondary' }}">
-                                                    {{ $labelMap[$attendance->status] ?? $attendance->status }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $attendance->created_at ? $attendance->created_at->translatedFormat('d F Y H:i') : '-' }}</td>
-                                        </tr>
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $attendance->student->nis ?? '-' }}</td>
+                                        <td>{{ $attendance->student->name ?? '-' }}</td>
+                                        <td>
+                                            @php
+                                            $statusMap = [
+                                            'hadir' => 'success',
+                                            'izin' => 'warning',
+                                            'sakit' => 'info',
+                                            'alpa' => 'danger'
+                                            ];
+                                            $labelMap = [
+                                            'hadir' => 'Hadir',
+                                            'izin' => 'Izin',
+                                            'sakit' => 'Sakit',
+                                            'alpa' => 'Alpa'
+                                            ];
+                                            @endphp
+                                            <span class="badge bg-{{ $statusMap[$attendance->status] ?? 'secondary' }}">
+                                                {{ $labelMap[$attendance->status] ?? $attendance->status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $attendance->created_at ? $attendance->created_at->translatedFormat('d F Y H:i') : '-' }}</td>
+                                    </tr>
                                     @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center">Belum ada data presensi</td>
-                                        </tr>
+                                    <tr>
+                                        <td colspan="5" class="text-center">Belum ada data presensi</td>
+                                    </tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -225,22 +223,41 @@
         border-radius: 5px;
         margin-bottom: 10px;
     }
+
     .info-box .info-box-icon {
         font-size: 24px;
         display: block;
         text-align: center;
     }
+
     .info-box .info-box-content {
         text-align: center;
     }
+
     .info-box .info-box-number {
         font-size: 20px;
         font-weight: bold;
     }
-    .info-box.bg-success { background: #d4edda; color: #155724; }
-    .info-box.bg-warning { background: #fff3cd; color: #856404; }
-    .info-box.bg-info { background: #d1ecf1; color: #0c5460; }
-    .info-box.bg-danger { background: #f8d7da; color: #721c24; }
+
+    .info-box.bg-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .info-box.bg-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .info-box.bg-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .info-box.bg-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
 </style>
 @endpush
 
@@ -279,41 +296,41 @@
 
         // Kirim request DELETE dengan fetch
         fetch("{{ url('admin/teaching-journals') }}/" + id, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = "{{ route('teaching-journals.index') }}";
-                });
-            } else {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "{{ route('teaching-journals.index') }}";
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Gagal!',
-                    text: data.message
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan. Silakan coba lagi.'
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Terjadi kesalahan. Silakan coba lagi.'
             });
-        });
     }
 </script>
 @endpush
