@@ -146,7 +146,7 @@
 
         <!-- Tabel Daftar Presensi Siswa -->
         <div class="row">
-            <div class="col-12 mt-4 ">
+            <div class="col-12">
                 <div class="card card-info">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -258,16 +258,33 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Fungsi untuk menampilkan modal konfirmasi hapus
     function confirmDelete(id) {
-        $('#modalHapus').modal('show');
-        $('#btnDeleteConfirm').off('click').on('click', function() {
+        // Tampilkan modal Bootstrap 5
+        const modalElement = document.getElementById('modalHapus');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+        // Set tombol konfirmasi hapus
+        const confirmBtn = document.getElementById('btnDeleteConfirm');
+        // Hapus event listener lama dengan clone
+        const newBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+        
+        // Tambahkan event listener baru
+        newBtn.addEventListener('click', function() {
             deleteJournal(id);
         });
     }
 
+    // Fungsi untuk menghapus jurnal
     function deleteJournal(id) {
-        $('#modalHapus').modal('hide');
+        // Tutup modal
+        const modalElement = document.getElementById('modalHapus');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
 
+        // Tampilkan loading
         Swal.fire({
             title: 'Menghapus...',
             text: 'Mohon tunggu sebentar',
@@ -277,38 +294,42 @@
             }
         });
 
-        $.ajax({
-            url: "{{ url('admin/teaching-journals') }}/" + id,
-            type: 'DELETE',
+        // Kirim request DELETE dengan fetch
+        fetch("{{ url('admin/teaching-journals') }}/" + id, {
+            method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = "{{ route('teaching-journals.index') }}";
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: response.message
-                    });
-                }
-            },
-            error: function(xhr) {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = "{{ route('teaching-journals.index') }}";
+                });
+            } else {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan. Silakan coba lagi.'
+                    title: 'Gagal!',
+                    text: data.message
                 });
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan. Silakan coba lagi.'
+            });
         });
     }
 </script>
