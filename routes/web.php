@@ -150,6 +150,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profile', [UsersController::class, 'profile'])->name('user.profile');
         Route::post('/profile/update', [UsersController::class, 'updateProfile'])->name('user.update-profile');
         Route::post('/profile/update-password', [UsersController::class, 'updatePassword'])->name('user.update-password');
+        Route::delete('/admin/profile/avatar', [UsersController::class, 'deleteAvatar'])->name('user.delete-avatar');
 
         // Tambahkan route import di bawah resource classrooms
         Route::post('classrooms/{id}/students/import', [ClassroomController::class, 'importStudents'])

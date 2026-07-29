@@ -58,52 +58,51 @@
             </li>
             <!--end::Fullscreen Toggle-->
 
-            <!--begin::User Menu Dropdown-->
-            <li class="nav-item dropdown user-menu">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <img
-                        src="{{ Auth::user()->avatar ? asset(Auth::user()->avatar) : asset('assets/img/logo-school.png') }}"
-                        class="user-image rounded-circle shadow"
-                        alt="User Image" />
-                    <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <!--begin::User Image-->
-                    <li class="user-header text-bg-primary">
-                        <img
-                            src="{{ Auth::user()->avatar ? asset(Auth::user()->avatar) : asset('assets/img/logo-school.png') }}"
-                            class="rounded-circle shadow"
-                            alt="User Image" />
-                        <p>
-                            {{ Auth::user()->name }}
-                            <small>
-                                {{ ucfirst(Auth::user()->roles->first()->name ?? 'User') }}
-                                @if(Auth::user()->created_at)
-                                <br>Member since {{ Auth::user()->created_at->format('M. Y') }}
-                                @endif
-                            </small>
-                        </p>
-                    </li>
-                    <!--end::User Image-->
-                    <!--begin::Menu Body-->
-                    <!--end::Menu Body-->
-                    <!--begin::Menu Footer-->
-                    <li class="user-footer">
-                        <!-- Profile link -->
-                        <a href="{{ route('user.profile') }}" class="btn btn-default btn-flat">
-                            <i class="bi bi-person"></i> Profile
-                        </a>
-                        <a href="{{ route('logout') }}" class="btn btn-default btn-flat float-end" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="bi bi-box-arrow-right"></i> Sign out
-                        </a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="GET" style="display: none;">
-                            @csrf
-                        </form>
-                    </li>
-                    <!--end::Menu Footer-->
-                </ul>
-            </li>
-            <!--end::User Menu Dropdown-->
+          @php use Illuminate\Support\Facades\Storage; @endphp
+
+<!--begin::User Menu Dropdown-->
+<li class="nav-item dropdown user-menu">
+    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+        <img
+            src="{{ Auth::user()->avatar ? Storage::url(Auth::user()->avatar) : asset('assets/img/logo-school.png') }}"
+            class="user-image rounded-circle shadow"
+            alt="User Image" />
+        <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+        <!--begin::User Image-->
+        <li class="user-header text-bg-primary">
+            <img
+                src="{{ Auth::user()->avatar ? Storage::url(Auth::user()->avatar) : asset('assets/img/logo-school.png') }}"
+                class="rounded-circle shadow"
+                alt="User Image" />
+            <p>
+                {{ Auth::user()->name }}
+                <small>
+                    {{ ucfirst(Auth::user()->roles->first()->name ?? 'User') }}
+                    @if(Auth::user()->created_at)
+                    <br>Member since {{ Auth::user()->created_at->format('M. Y') }}
+                    @endif
+                </small>
+            </p>
+        </li>
+        <!--end::User Image-->
+        <!--begin::Menu Footer-->
+        <li class="user-footer">
+            <a href="{{ route('user.profile') }}" class="btn btn-default btn-flat">
+                <i class="bi bi-person"></i> Profile
+            </a>
+            <a href="{{ route('logout') }}" class="btn btn-default btn-flat float-end" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="bi bi-box-arrow-right"></i> Sign out
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="GET" style="display: none;">
+                @csrf
+            </form>
+        </li>
+        <!--end::Menu Footer-->
+    </ul>
+</li>
+<!--end::User Menu Dropdown-->
         </ul>
         <!--end::End Navbar Links-->
     </div>
