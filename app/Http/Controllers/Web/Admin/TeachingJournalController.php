@@ -90,6 +90,10 @@ class TeachingJournalController extends Controller
             'attendances.student'
         ])->findOrFail($id);
 
+        // Debug: cek apakah lessonHour ada
+        Log::info('Journal ID: ' . $id);
+        Log::info('LessonHour:', ['data' => $journal->teachingSchedule->lessonHour ?? null]);
+
         return view('admin.teaching-journals.show', compact('journal'));
     }
 
