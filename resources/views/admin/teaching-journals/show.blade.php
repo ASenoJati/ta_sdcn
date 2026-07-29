@@ -21,7 +21,9 @@
     </div>
 </div>
 <!--end::App Content Header-->
-{{ Log::info('DATA', ['journal' => $journal]) }}
+@php
+    Log::info('DATA', ['journal' => $journal])
+@endphp
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
