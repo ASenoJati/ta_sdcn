@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule; // Tambahkan ini
 
 class LessonHourController extends Controller
 {
@@ -88,7 +89,13 @@ class LessonHourController extends Controller
             Log::info('Store lesson hour request', ['data' => $request->all()]);
 
             $validator = Validator::make($request->all(), [
-                'session' => 'required|integer|min:1|max:20|unique:lesson_hours,session',
+                'session' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    'max:20',
+                    Rule::unique('lesson_hours', 'session')->whereNull('deleted_at')
+                ],
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
             ]);
@@ -97,9 +104,10 @@ class LessonHourController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            // Check if combination of start_time and end_time already exists
+            // Check if combination of start_time and end_time already exists (only non-deleted)
             $exists = LessonHour::where('start_time', $request->start_time)
                 ->where('end_time', $request->end_time)
+                ->whereNull('deleted_at')
                 ->exists();
 
             if ($exists) {
@@ -159,7 +167,15 @@ class LessonHourController extends Controller
             $lessonHour = LessonHour::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'session' => 'required|integer|min:1|max:20|unique:lesson_hours,session,' . $id,
+                'session' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    'max:20',
+                    Rule::unique('lesson_hours', 'session')
+                        ->whereNull('deleted_at')
+                        ->ignore($id)
+                ],
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
             ]);
@@ -168,9 +184,10 @@ class LessonHourController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            // Check if combination of start_time and end_time already exists (excluding current record)
+            // Check if combination of start_time and end_time already exists (excluding current record and only non-deleted)
             $exists = LessonHour::where('start_time', $request->start_time)
                 ->where('end_time', $request->end_time)
+                ->whereNull('deleted_at')
                 ->where('id', '!=', $id)
                 ->exists();
 
