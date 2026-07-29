@@ -37,50 +37,51 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered">
-                            <tr>
-                                <th width="200">Hari / Tanggal</th>
-                                <td>{{ $journal->day_name }} - {{ $journal->date_formatted }}</td>
-                            </tr>
-                            <tr>
-                                <th>Mata Pelajaran</th>
-                                <td>{{ $journal->teachingSchedule->subject->name ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Kelas</th>
-                                <td>{{ $journal->teachingSchedule->classroom->name ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Guru</th>
-                                <td>{{ $journal->teachingSchedule->teacher->name ?? '-' }}</td>
-                            </tr>
-                            <tr>
-    <th>Jam Pelajaran</th>
-    <td>
-        @if($journal->teachingSchedule && $journal->teachingSchedule->lessonHour)
-            {{ $journal->teachingSchedule->lessonHour->time_start ?? '-' }} - {{ $journal->teachingSchedule->lessonHour->time_end ?? '-' }}
-        @else
-            <span class="text-muted">Belum diatur</span>
-        @endif
-    </td>
-</tr>
-                            <tr>
-                                <th>Materi</th>
-                                <td>{{ $journal->material ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Refleksi</th>
-                                <td>{{ $journal->reflection ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Dibuat</th>
-                                <td>{{ $journal->created_at->translatedFormat('d F Y H:i') }}</td>
-                            </tr>
-                            <tr>
-                                <th>Terakhir Diupdate</th>
-                                <td>{{ $journal->updated_at->translatedFormat('d F Y H:i') }}</td>
-                            </tr>
-                        </table>
+                      <table class="table table-bordered">
+    <tr>
+        <th width="200">Hari / Tanggal</th>
+        <td>{{ $journal->day_name }} - {{ $journal->date_formatted }}</td>
+    </tr>
+    <tr>
+        <th>Mata Pelajaran</th>
+        <td>{{ $journal->teachingSchedule->subject->name ?? '-' }}</td>
+    </tr>
+    <tr>
+        <th>Kelas</th>
+        <td>{{ $journal->teachingSchedule->classroom->name ?? '-' }}</td>
+    </tr>
+    <tr>
+        <th>Guru</th>
+        <td>{{ $journal->teachingSchedule->teacher->name ?? '-' }}</td>
+    </tr>
+    <tr>
+        <th>Jam Pelajaran</th>
+        <td>
+            @if($journal->teachingSchedule && $journal->teachingSchedule->lessonHour)
+                {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->start_time)->format('H:i') }} - 
+                {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->end_time)->format('H:i') }}
+            @else
+                -
+            @endif
+        </td>
+    </tr>
+    <tr>
+        <th>Materi</th>
+        <td>{{ $journal->material ?? '-' }}</td>
+    </tr>
+    <tr>
+        <th>Refleksi</th>
+        <td>{{ $journal->reflection ?? '-' }}</td>
+    </tr>
+    <tr>
+        <th>Dibuat</th>
+        <td>{{ $journal->created_at->translatedFormat('d F Y H:i') }}</td>
+    </tr>
+    <tr>
+        <th>Terakhir Diupdate</th>
+        <td>{{ $journal->updated_at->translatedFormat('d F Y H:i') }}</td>
+    </tr>
+</table>
                     </div>
                     <div class="card-footer">
                         <a href="{{ route('teaching-journals.index') }}" class="btn btn-secondary">
