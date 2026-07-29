@@ -241,53 +241,40 @@
         <!-- Today's Schedule & Recent Activities -->
         <div class="row mt-4">
             <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="bi bi-calendar-day-fill me-2"></i> Jadwal Hari Ini - {{ Carbon\Carbon::now()->format('l, d/m/Y') }}
-                        </h3>
-                        <div class="card-tools">
-                            <span class="badge bg-primary">{{ $todaySchedules->count() }} Jadwal</span>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Jam</th>
-                                        <th>Mata Pelajaran</th>
-                                        <th>Kelas</th>
-                                        <th>Guru</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($todaySchedules as $schedule)
-                                    <tr>
-                                        <td>
-                                            <span class="badge bg-info">
-                                                {{ $schedule->lessonHour->session }} ({{ substr($schedule->lessonHour->start_time, 0, 5) }})
-                                            </span>
-                                        </td>
-                                        <td>{{ $schedule->subject->name }}</td>
-                                        <td>{{ $schedule->classroom->name }}</td>
-                                        <td>{{ $schedule->teacher->name ?? '-' }}</td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center">Tidak ada jadwal hari ini</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="{{ route('classroom-schedules.index') }}" class="btn btn-primary btn-sm">
-                            Lihat Semua Jadwal <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+              <!-- Jadwal Hari Ini -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Jadwal Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('l, d F Y') }})</h3>
+    </div>
+    <div class="card-body">
+        @if($todaySchedules->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mata Pelajaran</th>
+                            <th>Guru</th>
+                            <th>Kelas</th>
+                            <th>Jam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($todaySchedules as $schedule)
+                            <tr>
+                                <td>{{ $schedule->subject_name }}</td>
+                                <td>{{ $schedule->teacher_name }}</td>
+                                <td>{{ $schedule->classroom_name }}</td>
+                                <td>{{ $schedule->lesson_hour }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="text-muted text-center">Tidak ada jadwal untuk hari ini.</p>
+        @endif
+    </div>
+</div>
             </div>
             
             <div class="col-lg-6">
