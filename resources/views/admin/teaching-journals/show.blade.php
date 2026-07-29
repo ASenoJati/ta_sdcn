@@ -207,26 +207,6 @@
     </div>
 </div>
 <!--end::App Content-->
-
-<!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="modalHapus" tabindex="-1" aria-labelledby="modalHapusLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalHapusLabel">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Apakah Anda yakin ingin menghapus jurnal pembelajaran ini?</p>
-                <p class="text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Perhatian: Menghapus jurnal juga akan menghapus semua data presensi siswa!</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-danger" id="btnDeleteConfirm">Hapus</button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('styles')
@@ -258,33 +238,24 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Fungsi untuk menampilkan modal konfirmasi hapus
     function confirmDelete(id) {
-        // Tampilkan modal Bootstrap 5
-        const modalElement = document.getElementById('modalHapus');
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-
-        // Set tombol konfirmasi hapus
-        const confirmBtn = document.getElementById('btnDeleteConfirm');
-        // Hapus event listener lama dengan clone
-        const newBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-        
-        // Tambahkan event listener baru
-        newBtn.addEventListener('click', function() {
-            deleteJournal(id);
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Menghapus jurnal juga akan menghapus semua data presensi siswa!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteJournal(id);
+            }
         });
     }
 
-    // Fungsi untuk menghapus jurnal
     function deleteJournal(id) {
-        // Tutup modal
-        const modalElement = document.getElementById('modalHapus');
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        if (modal) modal.hide();
-
-        // Tampilkan loading
         Swal.fire({
             title: 'Menghapus...',
             text: 'Mohon tunggu sebentar',
@@ -294,7 +265,6 @@
             }
         });
 
-        // Kirim request DELETE dengan fetch
         fetch("{{ url('admin/teaching-journals') }}/" + id, {
             method: 'DELETE',
             headers: {
