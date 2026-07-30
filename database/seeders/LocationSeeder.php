@@ -14,24 +14,24 @@ class LocationSeeder extends Seeder
     {
         $locations = [
             [
-                'name'        => 'Kantor Pusat SD Cahaya Nur',
-                'longitude'   => 110.370529, // Contoh koordinat (Yogyakarta)
-                'latitude'    => -7.797068,
-                'radius_km'   => 1, // Radius 1 KM
+                'name'        => 'SD Cahaya Nur',
+                'longitude'   => 110.84460079072929,
+                'latitude'    => -6.807101770145372,
+                'radius_km'   => 1,
                 'default'     => true,
                 'address'     => 'Jl. Contoh No. 123, Kota Yogyakarta',
-                'description' => 'Lokasi utama untuk presensi guru dan staff.',
+                'description' => 'Lokasi default untuk pengembangan aplikasi',
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ],
             [
-                'name'        => 'Gedung Olahraga (GOR)',
-                'longitude'   => 110.375000,
-                'latitude'    => -7.799000,
+                'name'        => 'SMK Raden Umar Said',
+                'longitude'   => 110.8428394438202,
+                'latitude'    => -6.753778591552996,
                 'radius_km'   => 2,
                 'default'     => false,
-                'address'     => 'Jl. Olahraga No. 45, Kota Yogyakarta',
-                'description' => 'Lokasi cadangan untuk kegiatan luar ruangan.',
+                'address'     => 'Jalan Sukun Raya No.09, Besito Kulon, Besito, Kec. Gebog, Kabupaten Kudus, Jawa Tengah 59333',
+                'description' => 'Lokasi development',
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ],
@@ -39,7 +39,7 @@ class LocationSeeder extends Seeder
 
         foreach ($locations as $location) {
             DB::table('locations')->updateOrInsert(
-                ['name' => $location['name']], // Kunci unik untuk pengecekan
+                ['name' => $location['name']],
                 $location
             );
         }
