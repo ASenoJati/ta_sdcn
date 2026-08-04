@@ -34,6 +34,14 @@
                     </a>
                 </li>
 
+                <!-- Tahun Ajaran -->
+<li class="nav-item">
+    <a href="{{ route('academic-years.index') }}" class="nav-link {{ request()->routeIs('academic-years.*') ? 'active' : '' }}">
+        <i class="nav-icon bi bi-calendar-range"></i>
+        <p>Tahun Ajaran</p>
+    </a>
+</li>
+
                 <li class="nav-header">SISWA</li>
                 {{-- <li class="nav-item">
                     <a href="{{ route('students.index') }}" class="nav-link {{ request()->routeIs('students.*') ? 'active' : '' }}">

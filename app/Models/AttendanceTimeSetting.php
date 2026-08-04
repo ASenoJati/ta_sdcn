@@ -68,4 +68,9 @@ class AttendanceTimeSetting extends Model
         }
         return 'Tidak ada';
     }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
 }

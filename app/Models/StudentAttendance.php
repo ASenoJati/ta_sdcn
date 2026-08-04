@@ -47,4 +47,9 @@ class StudentAttendance extends Model
         $status = self::$statuses[$this->status] ?? ['badge' => 'secondary', 'label' => $this->status];
         return '<span class="badge bg-' . $status['badge'] . '"><i class="bi ' . $status['icon'] . '"></i> ' . $status['label'] . '</span>';
     }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
 }

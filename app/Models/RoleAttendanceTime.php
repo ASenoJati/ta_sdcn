@@ -22,4 +22,9 @@ class RoleAttendanceTime extends Model
     {
         return $this->belongsTo(AttendanceTimeSetting::class, 'attendance_time_settings_id');
     }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
 }
