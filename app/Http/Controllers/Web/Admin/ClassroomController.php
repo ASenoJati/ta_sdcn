@@ -7,41 +7,32 @@ use App\Http\Controllers\Controller;
 use App\Imports\StudentsImport;
 use App\Models\Classroom;
 use App\Models\Student;
+use App\Models\AcademicYear; // <-- tambahkan
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
-use Maatwebsite\Excel\Excel as ExcelContract;  // import interface
-
+use Maatwebsite\Excel\Excel as ExcelContract;
 
 class ClassroomController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return view('admin.classrooms.index');
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        return view('admin.classrooms.index', compact('academicYears'));
     }
 
-    /**
-     * Display students by classroom.
-     */
     public function showStudents($id)
     {
         $classroom = Classroom::findOrFail($id);
         return view('admin.classrooms.students', compact('classroom'));
     }
 
-    /**
-     * Get students data for specific classroom.
-     */
     public function getStudentsData(Request $request, $id)
     {
         try {
             $classroom = Classroom::findOrFail($id);
-
             $students = Student::where('classroom_id', $id)
                 ->with('classroom')
                 ->select('students.*');
@@ -74,27 +65,19 @@ class ClassroomController extends Controller
         return $excel->download(new StudentsTemplateExport, 'template_siswa.xlsx');
     }
 
-    /**
-     * Import students from Excel file.
-     */
     public function importStudents(Request $request, $id)
     {
-        // Validasi file
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120' // maksimal 5MB
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120'
         ]);
 
-        // Cari kelas
         $classroom = Classroom::findOrFail($id);
 
         try {
-            // Proses import
             Excel::import(new StudentsImport($classroom->id), $request->file('file'));
-
             return redirect()->route('classrooms.students', $id)
                 ->with('success', 'Data siswa berhasil diimport!');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            // Tangkap error validasi dari Excel
             $failures = $e->failures();
             $errors = [];
             foreach ($failures as $failure) {
@@ -106,9 +89,6 @@ class ClassroomController extends Controller
         }
     }
 
-    /**
-     * Get data for DataTables.
-     */
     public function getData(Request $request)
     {
         try {
@@ -119,9 +99,6 @@ class ClassroomController extends Controller
                 ->addColumn('students_count', function ($row) {
                     return '<span class="badge bg-primary">' . $row->students_count . ' Siswa</span>';
                 })
-                // ->addColumn('description_short', function ($row) {
-                //     return \Str::limit($row->description, 50) ?? '-';
-                // })
                 ->addColumn('created_at_formatted', function ($row) {
                     return $row->created_at->translatedFormat('d F Y H:i');
                 })
@@ -146,15 +123,13 @@ class ClassroomController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:classrooms,name',
-                'description' => 'nullable|string'
+                'description' => 'nullable|string',
+                'academic_year_id' => 'required|exists:academic_years,id',
             ]);
 
             if ($validator->fails()) {
@@ -176,18 +151,12 @@ class ClassroomController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         $classroom = Classroom::findOrFail($id);
         return response()->json($classroom);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         try {
@@ -195,7 +164,8 @@ class ClassroomController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:classrooms,name,' . $id,
-                'description' => 'nullable|string'
+                'description' => 'nullable|string',
+                'academic_year_id' => 'required|exists:academic_years,id',
             ]);
 
             if ($validator->fails()) {
@@ -217,9 +187,6 @@ class ClassroomController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         try {
@@ -246,9 +213,6 @@ class ClassroomController extends Controller
         }
     }
 
-    /**
-     * Get list of classrooms for dropdown.
-     */
     public function getList()
     {
         $classrooms = Classroom::select('id', 'name')->orderBy('name')->get();

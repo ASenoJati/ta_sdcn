@@ -16,6 +16,7 @@ class TeachingJournal extends Model
         'date',
         'material',
         'reflection',
+        'academic_year_id'
     ];
 
     protected $casts = [
@@ -79,5 +80,28 @@ class TeachingJournal extends Model
             'alpa'  => $attendances->where('status', 'alpa')->count(),
             'total' => $attendances->count()
         ];
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function materials()
+    {
+        return $this->hasMany(JournalMaterial::class);
+    }
+
+    public function getMaterialsForStudent($studentId = null)
+    {
+        if ($studentId) {
+            return $this->materials()->where(function ($query) use ($studentId) {
+                $query->where('is_for_all_students', true)
+                    ->orWhereHas('students', function ($q) use ($studentId) {
+                        $q->where('student_id', $studentId);
+                    });
+            })->get();
+        }
+        return $this->materials()->where('is_for_all_students', true)->get();
     }
 }

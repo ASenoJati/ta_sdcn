@@ -17,7 +17,8 @@ class TeachingSchedule extends Model
         'subject_id',
         'classroom_id',
         'day',
-        'lesson_hour_id'
+        'lesson_hour_id',
+        'academic_year_id'
     ];
 
     protected $casts = [
@@ -79,5 +80,10 @@ class TeachingSchedule extends Model
     public function getCreatedAtFormattedAttribute()
     {
         return $this->created_at->format('d/m/Y H:i');
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 }

@@ -81,6 +81,21 @@
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
+                    <div class="mb-3">
+    <label for="academic_year_id" class="form-label">Tahun Ajaran <span class="text-danger">*</span></label>
+    <select class="form-select" id="academic_year_id" name="academic_year_id" required>
+        <option value="">-- Pilih Tahun Ajaran --</option>
+        @foreach($academicYears as $year)
+            <option value="{{ $year->id }}">
+                {{ $year->name }}
+                @if($year->is_active)
+                    (Aktif)
+                @endif
+            </option>
+        @endforeach
+    </select>
+    <div class="invalid-feedback"></div>
+</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -206,6 +221,7 @@ function editClassroom(id) {
             $('#classroom_id').val(data.id);
             $('#name').val(data.name);
             $('#description').val(data.description);
+            $('#academic_year_id').val(data.academic_year_id); // tambahkan ini
             $('#modalClassroomLabel').text('Edit Data Kelas');
             $('#modalClassroom').modal('show');
         }
@@ -242,6 +258,8 @@ function resetForm() {
     $('#modalClassroomLabel').text('Tambah Data Kelas');
     $('.is-invalid').removeClass('is-invalid');
     $('#classroomForm input[name="_method"]').remove();
+    // Reset dropdown ke pilihan pertama (kosong)
+    $('#academic_year_id').val('');
 }
 </script>
 @endpush

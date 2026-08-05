@@ -14,10 +14,16 @@ class LessonHour extends Model
         'session',
         'start_time',
         'end_time',
+        'academic_year_id'
     ];
 
     public function teachingSchedules(): HasMany
     {
         return $this->hasMany(TeachingSchedule::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 }

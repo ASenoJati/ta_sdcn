@@ -50,4 +50,9 @@ class Location extends Model
             }
         });
     }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
 }

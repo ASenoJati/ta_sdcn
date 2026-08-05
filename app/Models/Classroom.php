@@ -10,7 +10,7 @@ class Classroom extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'description', 'academic_year_id'];
 
     public function students(): HasMany
     {
@@ -20,5 +20,10 @@ class Classroom extends Model
     public function schedules(): HasMany
     {
         return $this->hasMany(TeachingSchedule::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 }

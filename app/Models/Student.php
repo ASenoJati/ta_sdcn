@@ -11,7 +11,7 @@ class Student extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['classroom_id', 'name', 'nis'];
+    protected $fillable = ['classroom_id', 'name', 'nis', 'academic_year_id'];
 
     public function classroom(): BelongsTo
     {
@@ -21,5 +21,10 @@ class Student extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(StudentAttendance::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\Admin\AcademicYearController;
 use App\Http\Controllers\Web\Admin\AttendanceTimeSettingController;
 use App\Http\Controllers\Web\Admin\ClassroomController;
 use App\Http\Controllers\Web\Admin\ClassroomScheduleController;
@@ -158,6 +159,24 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('classrooms/students/template', [ClassroomController::class, 'downloadTemplate'])
             ->name('classrooms.students.template');
+
+        // Academic Years
+        Route::get('/academic-years', [AcademicYearController::class, 'index'])->name('academic-years.index');
+        Route::get('/academic-years/data', [AcademicYearController::class, 'getData'])->name('academic-years.data');
+        Route::post('/academic-years', [AcademicYearController::class, 'store'])->name('academic-years.store');
+        Route::get('/academic-years/{id}/edit', [AcademicYearController::class, 'edit'])->name('academic-years.edit');
+        Route::put('/academic-years/{id}', [AcademicYearController::class, 'update'])->name('academic-years.update');
+        Route::delete('/academic-years/{id}', [AcademicYearController::class, 'destroy'])->name('academic-years.destroy');
+        Route::post('/academic-years/{id}/set-active', [AcademicYearController::class, 'setActive'])->name('academic-years.set-active');
+        Route::get('/academic-years/list', [AcademicYearController::class, 'getList'])->name('academic-years.list');
+
+        Route::post('/teaching-journals/{journal}/materials', [TeachingJournalController::class, 'storeMaterial'])
+            ->name('teaching-journals.materials.store');
+        Route::delete('/teaching-journals/{journal}/materials/{material}', [TeachingJournalController::class, 'destroyMaterial'])
+            ->name('teaching-journals.materials.destroy');
+        Route::get('/teaching-journals/{id}/students-list', [TeachingJournalController::class, 'getStudentsList'])->name('teaching-journals.students-list');
+        Route::get('/teaching-journals/materials/{material}/students', [TeachingJournalController::class, 'getMaterialStudents'])
+            ->name('teaching-journals.materials.students');
     });
 
     // Route Khusus Teacher
