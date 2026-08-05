@@ -37,7 +37,11 @@ class FirebaseNotificationService
     {
         $results = [];
         foreach ($tokens as $token) {
-            $results[] = $this->sendToDevice($token, $title, $body, $data);
+            $result = $this->sendToDevice($token, $title, $body, $data);
+            $results[] = $result;
+            if (!$result['success']) {
+                Log::error('Gagal kirim ke token: ' . $token . ' - ' . ($result['error'] ?? 'unknown error'));
+            }
         }
         return $results;
     }

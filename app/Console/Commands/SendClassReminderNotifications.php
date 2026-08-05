@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\TeachingSchedule;
+use App\Models\User;
 use App\Models\UserFcmToken;
 use App\Services\FirebaseNotificationService;
 use Carbon\Carbon;
@@ -11,8 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class SendClassReminderNotifications extends Command
 {
-    protected $signature = 'notifications:send-class-reminders {--minutes=5 : Jumlah menit ke depan untuk mencari jadwal yang akan dimulai}';
-
+    protected $signature = 'notifications:send-class-reminders {--minutes=5 : Jumlah menit ke depan}';
     protected $description = 'Kirim notifikasi push untuk jadwal yang akan segera dimulai';
 
     protected $firebaseService;
@@ -30,11 +30,18 @@ class SendClassReminderNotifications extends Command
         $targetTime = $now->copy()->addMinutes($minutesAhead);
 
         $startTime = $targetTime->format('H:i:s');
-        // Beri toleransi 1 menit agar lebih fleksibel
         $startTimeLower = Carbon::parse($startTime)->subMinute()->format('H:i:s');
         $startTimeUpper = Carbon::parse($startTime)->addMinute()->format('H:i:s');
 
-        $schedules = TeachingSchedule::with(['teacher', 'subject', 'classroom', 'lessonHour'])
+        // Log awal
+        Log::info('Cron notifikasi dijalankan', [
+            'time' => $now->toDateTimeString(),
+            'target_time' => $targetTime->toDateTimeString(),
+            'start_time_lower' => $startTimeLower,
+            'start_time_upper' => $startTimeUpper,
+        ]);
+
+        $schedules = TeachingSchedule::with(['teacher', 'subject', 'classroom', 'classroom.students', 'lessonHour'])
             ->where('day', $targetTime->format('l'))
             ->whereHas('lessonHour', function ($query) use ($startTimeLower, $startTimeUpper) {
                 $query->whereBetween('start_time', [$startTimeLower, $startTimeUpper]);
@@ -42,7 +49,8 @@ class SendClassReminderNotifications extends Command
             ->get();
 
         if ($schedules->isEmpty()) {
-            $this->info("Tidak ada jadwal pada {$targetTime->format('H:i')} (plus/minus 1 menit).");
+            $this->info("Tidak ada jadwal pada {$targetTime->format('H:i')}.");
+            Log::info('Tidak ada jadwal ditemukan', ['target_time' => $targetTime->format('H:i')]);
             return;
         }
 
@@ -50,16 +58,19 @@ class SendClassReminderNotifications extends Command
             $this->sendNotificationForSchedule($schedule);
         }
 
-        $this->info('Notifikasi terkirim untuk ' . $schedules->count() . ' jadwal.');
+        $this->info('Proses selesai.');
     }
 
     protected function sendNotificationForSchedule($schedule)
     {
-        // Kumpulkan user_id (guru + siswa)
         $userIds = collect();
-        if ($schedule->teacher_id) {
-            $userIds->push($schedule->teacher_id);
+
+        // Guru: pakai user_id (bukan teacher_id)
+        if ($schedule->user_id) {
+            $userIds->push($schedule->user_id);
         }
+
+        // Siswa: jika ada user_id (untuk sistem yang punya akun siswa)
         $students = $schedule->classroom->students ?? collect();
         foreach ($students as $student) {
             if ($student->user_id) {
@@ -68,13 +79,31 @@ class SendClassReminderNotifications extends Command
         }
 
         $userIds = $userIds->unique();
+
+        // Jika tidak ada user, keluar
+        if ($userIds->isEmpty()) {
+            Log::warning('Tidak ada user untuk jadwal ID: ' . $schedule->id);
+            $this->warn("Tidak ada user untuk jadwal ID: {$schedule->id}");
+            return;
+        }
+
+        $userIds = $userIds->unique()->values();
+        Log::info('User IDs ditemukan untuk jadwal ID ' . $schedule->id, ['user_ids' => $userIds->toArray()]);
+
+        // Ambil semua token dari user_ids tersebut
         $tokens = UserFcmToken::whereIn('user_id', $userIds)->pluck('fcm_token')->toArray();
 
         if (empty($tokens)) {
+            Log::warning('Tidak ada token untuk jadwal ID: ' . $schedule->id, [
+                'user_ids' => $userIds->toArray()
+            ]);
             $this->warn("Tidak ada token untuk jadwal ID: {$schedule->id}");
             return;
         }
 
+        Log::info('Token ditemukan untuk jadwal ID ' . $schedule->id, ['tokens_count' => count($tokens)]);
+
+        // Bangun notifikasi
         $title = "⏰ Kelas akan segera dimulai!";
         $body = sprintf(
             "%s - %s\nKelas: %s\nJam: %s - %s",
@@ -93,7 +122,16 @@ class SendClassReminderNotifications extends Command
             'timestamp' => now()->toISOString(),
         ];
 
-        $this->firebaseService->sendToMultipleDevices($tokens, $title, $body, $data);
-        Log::info('Notifikasi dikirim', ['schedule_id' => $schedule->id, 'tokens_count' => count($tokens)]);
+        // Kirim notifikasi
+        $results = $this->firebaseService->sendToMultipleDevices($tokens, $title, $body, $data);
+
+        Log::info('Hasil pengiriman notifikasi', [
+            'schedule_id' => $schedule->id,
+            'total_tokens' => count($tokens),
+            'success_count' => collect($results)->where('success', true)->count(),
+            'failed_count' => collect($results)->where('success', false)->count(),
+        ]);
+
+        $this->info("Notifikasi dikirim untuk jadwal ID: {$schedule->id}");
     }
 }
