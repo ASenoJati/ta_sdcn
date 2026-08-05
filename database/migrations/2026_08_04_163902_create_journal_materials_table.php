@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('journal_materials', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('teaching_journal_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->enum('type', ['file', 'link']);
+            $table->string('path')->nullable(); // untuk file
+            $table->text('url')->nullable(); // untuk link
+            $table->string('file_name')->nullable(); // nama asli file
+            $table->string('file_size')->nullable(); // ukuran file
+            $table->string('mime_type')->nullable(); // tipe file
+            $table->boolean('is_for_all_students')->default(true);
             $table->timestamps();
         });
     }

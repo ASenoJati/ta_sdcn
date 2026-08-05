@@ -76,4 +76,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->notify(new ResetPasswordNotification($token));
     }
+
+    // app/Models/User.php
+    public function fcmTokens()
+    {
+        return $this->hasMany(UserFcmToken::class);
+    }
 }

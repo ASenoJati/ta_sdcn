@@ -169,6 +169,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/academic-years/{id}', [AcademicYearController::class, 'destroy'])->name('academic-years.destroy');
         Route::post('/academic-years/{id}/set-active', [AcademicYearController::class, 'setActive'])->name('academic-years.set-active');
         Route::get('/academic-years/list', [AcademicYearController::class, 'getList'])->name('academic-years.list');
+
+        Route::post('/teaching-journals/{journal}/materials', [TeachingJournalController::class, 'storeMaterial'])
+            ->name('teaching-journals.materials.store');
+        Route::delete('/teaching-journals/{journal}/materials/{material}', [TeachingJournalController::class, 'destroyMaterial'])
+            ->name('teaching-journals.materials.destroy');
+        Route::get('/teaching-journals/{id}/students-list', [TeachingJournalController::class, 'getStudentsList'])->name('teaching-journals.students-list');
+        Route::get('/teaching-journals/materials/{material}/students', [TeachingJournalController::class, 'getMaterialStudents'])
+            ->name('teaching-journals.materials.students');
     });
 
     // Route Khusus Teacher

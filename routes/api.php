@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\RoleAttendanceController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\JournalController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/attendance/check-out', [AttendanceController::class, 'checkout']);
     // History Absensi (Index)
     Route::get('/attendance/history', [AttendanceController::class, 'index']);
+
+    Route::post('/fcm/register', [FcmTokenController::class, 'register']);
+    Route::delete('/fcm/unregister', [FcmTokenController::class, 'unregister']);
 
     // Khusus Admin
     Route::middleware('role:admin')->group(function () {

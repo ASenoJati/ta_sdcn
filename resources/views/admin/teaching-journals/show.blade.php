@@ -151,6 +151,87 @@
             </div>
         </div>
 
+        <!-- Card Manajemen Materi -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-folder2-open me-2"></i> Materi Pembelajaran
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalMaterial">
+                                <i class="bi bi-plus-circle"></i> Tambah Materi
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if($journal->materials->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Judul</th>
+                                        <th>Tipe</th>
+                                        <th>File / Link</th>
+                                        <th>Untuk Siswa</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($journal->materials as $index => $material)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $material->title }}</td>
+                                        <td>
+                                            @if($material->type === 'file')
+                                            <span class="badge bg-info">File</span>
+                                            @else
+                                            <span class="badge bg-success">Link</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($material->type === 'file')
+                                            <a href="{{ Storage::url($material->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Unduh
+                                            </a>
+                                            @else
+                                            <a href="{{ $material->url }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-link-45deg"></i> Buka Link
+                                            </a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($material->students->count() > 0)
+                                            <span class="badge bg-warning text-dark">
+                                                {{ $material->students->count() }} siswa
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="showStudents({{ $material->id }})">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            @else
+                                            <span class="badge bg-success">Semua Siswa</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteMaterial({{ $journal->id }}, {{ $material->id }})">
+    <i class="bi bi-trash"></i>
+</button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <div class="alert alert-info">Belum ada materi yang ditambahkan.</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tabel Daftar Presensi Siswa -->
         <div class="row">
             <div class="col-12 mt-4">
@@ -214,6 +295,84 @@
     </div>
 </div>
 <!--end::App Content-->
+
+<!-- Modal Tambah Materi -->
+<div class="modal fade" id="modalMaterial" tabindex="-1" aria-labelledby="modalMaterialLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalMaterialLabel">
+                    <i class="bi bi-plus-circle me-2"></i> Tambah Materi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('teaching-journals.materials.store', $journal->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Judul Materi <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipe Materi <span class="text-danger">*</span></label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="type" id="typeFile" value="file" checked>
+                            <label class="form-check-label" for="typeFile">Upload File</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="type" id="typeLink" value="link">
+                            <label class="form-check-label" for="typeLink">Link URL</label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="fileInputGroup">
+                        <label for="file" class="form-label">Pilih File <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="file" name="file" accept="*/*">
+                        <small class="text-muted">Maksimal 10MB. Semua format diperbolehkan.</small>
+                    </div>
+                    <div class="mb-3 d-none" id="linkInputGroup">
+                        <label for="link_url" class="form-label">Link URL <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control" id="link_url" name="url" placeholder="https://example.com/materi">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Deskripsi (Opsional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kirim ke Siswa <span class="text-danger">*</span></label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="student_option" id="allStudents" value="all" checked>
+                            <label class="form-check-label" for="allStudents">Semua Siswa di Kelas Ini</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="student_option" id="selectedStudents" value="selected">
+                            <label class="form-check-label" for="selectedStudents">Pilih Siswa Tertentu</label>
+                        </div>
+                        <div id="studentSelectionContainer" class="d-none">
+                            <div class="border rounded p-3">
+                                <div class="row">
+                                    @foreach($classroomStudents as $student)
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="student_ids[]" value="{{ $student->id }}" id="student_{{ $student->id }}">
+                                            <label class="form-check-label" for="student_{{ $student->id }}">
+                                                {{ $student->name }} ({{ $student->nis }})
+                                            </label>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning">Simpan Materi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('styles')
@@ -262,9 +421,13 @@
 @endpush
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Fungsi konfirmasi hapus dengan SweetAlert2
+    // Konfirmasi hapus jurnal
     function confirmDelete(id) {
         Swal.fire({
             title: 'Konfirmasi Hapus',
@@ -282,19 +445,15 @@
         });
     }
 
-    // Fungsi untuk menghapus jurnal
+    // Hapus jurnal
     function deleteJournal(id) {
-        // Tampilkan loading
         Swal.fire({
             title: 'Menghapus...',
             text: 'Mohon tunggu sebentar',
             allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            didOpen: () => Swal.showLoading()
         });
 
-        // Kirim request DELETE dengan fetch
         fetch("{{ url('admin/teaching-journals') }}/" + id, {
                 method: 'DELETE',
                 headers: {
@@ -324,7 +483,6 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
@@ -332,5 +490,157 @@
                 });
             });
     }
+
+    // Hapus materi
+   function deleteMaterial(journalId, materialId) {
+    Swal.fire({
+        title: 'Konfirmasi Hapus',
+        text: 'Apakah Anda yakin ingin menghapus materi ini?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Menghapus...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            // Gunakan URL dengan journalId dan materialId
+            const url = '{{ url("admin/teaching-journals") }}/' + journalId + '/materials/' + materialId;
+            
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Gagal!', text: data.message });
+                }
+            })
+            .catch(error => {
+                Swal.fire({ icon: 'error', title: 'Error!', text: 'Terjadi kesalahan. Silakan coba lagi.' });
+            });
+        }
+    });
+}
+
+    // Tampilkan daftar siswa penerima materi
+    function showStudents(materialId) {
+        Swal.fire({
+            title: 'Daftar Siswa Penerima Materi',
+            html: '<div id="studentListModal"><div class="text-center"><div class="spinner-border text-primary" role="status"></div><p>Memuat...</p></div></div>',
+            showCloseButton: true,
+            showConfirmButton: false,
+            width: 600,
+            didOpen: () => {
+                fetch('{{ url("admin/teaching-journals/materials") }}/' + materialId + '/students')
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
+                        if (data.length > 0) {
+                            html = '<ul class="list-group">';
+                            data.forEach(student => {
+                                html += '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                                    student.name +
+                                    '<span class="badge bg-primary rounded-pill">' + student.nis + '</span>' +
+                                    '</li>';
+                            });
+                            html += '</ul>';
+                        } else {
+                            html = '<p class="text-muted">Tidak ada siswa yang menerima materi ini.</p>';
+                        }
+                        document.getElementById('studentListModal').innerHTML = html;
+                    })
+                    .catch(() => {
+                        document.getElementById('studentListModal').innerHTML = '<p class="text-danger">Gagal memuat data. Silakan coba lagi.</p>';
+                    });
+            }
+        });
+    }
+
+    // ========== FUNGSI TOGGLE ==========
+
+    // Toggle tipe materi (file/link)
+    function toggleMaterialType() {
+        const typeFile = document.getElementById('typeFile');
+        const typeLink = document.getElementById('typeLink');
+        const fileGroup = document.getElementById('fileInputGroup');
+        const linkGroup = document.getElementById('linkInputGroup');
+        const fileInput = document.getElementById('file');
+        const linkInput = document.getElementById('link_url');
+
+        if (!typeFile || !typeLink || !fileGroup || !linkGroup) return;
+
+        if (typeFile.checked) {
+            fileGroup.classList.remove('d-none');
+            linkGroup.classList.add('d-none');
+            if (fileInput) fileInput.required = true;
+            if (linkInput) linkInput.required = false;
+        } else if (typeLink.checked) {
+            fileGroup.classList.add('d-none');
+            linkGroup.classList.remove('d-none');
+            if (fileInput) fileInput.required = false;
+            if (linkInput) linkInput.required = true;
+        }
+    }
+
+    // Toggle pilihan siswa (semua / custom)
+    function toggleStudentSelection() {
+        const optionAll = document.getElementById('allStudents');
+        const optionSelected = document.getElementById('selectedStudents');
+        const container = document.getElementById('studentSelectionContainer');
+
+        if (!optionAll || !optionSelected || !container) return;
+
+        if (optionSelected.checked) {
+            container.classList.remove('d-none');
+        } else {
+            container.classList.add('d-none');
+            // Uncheck semua checkbox siswa
+            document.querySelectorAll('input[name="student_ids[]"]').forEach(el => el.checked = false);
+        }
+    }
+
+    // ========== JQUERY READY ==========
+    $(document).ready(function() {
+        console.log('✅ Detail Jurnal siap digunakan.');
+
+        // Set initial state
+        toggleMaterialType();
+        toggleStudentSelection();
+
+        // Event listeners untuk radio button
+        document.querySelectorAll('input[name="type"]').forEach(el => {
+            el.addEventListener('change', toggleMaterialType);
+        });
+
+        document.querySelectorAll('input[name="student_option"]').forEach(el => {
+            el.addEventListener('change', toggleStudentSelection);
+        });
+
+        // File input preview (jQuery)
+        $('#file').on('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'Tidak ada file dipilih';
+            $('label[for="file"]').html('Pilih File <span class="text-danger">*</span> <small class="text-muted">(' + fileName + ')</small>');
+        });
+    });
 </script>
 @endpush
