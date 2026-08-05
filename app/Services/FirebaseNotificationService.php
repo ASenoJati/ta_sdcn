@@ -30,7 +30,7 @@ class FirebaseNotificationService
             $message = CloudMessage::new()
                 ->withNotification($notification)
                 ->withData($data)
-                ->withToken($deviceToken);
+                ->withChangedTarget('token', $deviceToken);
 
             $this->messaging->send($message);
 
