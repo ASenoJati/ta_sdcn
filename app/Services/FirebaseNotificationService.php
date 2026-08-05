@@ -18,23 +18,23 @@ class FirebaseNotificationService
         $this->messaging = $factory->createMessaging();
     }
 
-    /**
-     * Kirim notifikasi ke satu perangkat
-     */
     public function sendToDevice(string $deviceToken, string $title, string $body, array $data = [])
     {
         try {
+            // Konversi semua nilai data menjadi string (FCM hanya menerima string)
+            $stringData = [];
+            foreach ($data as $key => $value) {
+                $stringData[$key] = (string) $value;
+            }
+
             $notification = Notification::create($title, $body);
 
-            // Membuat CloudMessage dengan target token
             $message = CloudMessage::new()
                 ->withNotification($notification)
-                ->withData($data)
-                ->withChangedTarget('token', $deviceToken);
+                ->withData($stringData)
+                ->withToken($deviceToken); // ✅ Perbaiki: pakai withToken()
 
             $this->messaging->send($message);
-
-            Log::info('Push notification sent', ['token' => $deviceToken]);
             return ['success' => true];
         } catch (\Exception $e) {
             Log::error('FCM send error: ' . $e->getMessage());
@@ -42,9 +42,6 @@ class FirebaseNotificationService
         }
     }
 
-    /**
-     * Kirim notifikasi ke banyak perangkat
-     */
     public function sendToMultipleDevices(array $tokens, string $title, string $body, array $data = [])
     {
         $results = [];
