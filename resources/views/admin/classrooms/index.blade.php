@@ -81,21 +81,22 @@
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
-                    <div class="mb-3">
-    <label for="academic_year_id" class="form-label">Tahun Ajaran <span class="text-danger">*</span></label>
-    <select class="form-select" id="academic_year_id" name="academic_year_id" required>
-        <option value="">-- Pilih Tahun Ajaran --</option>
-        @foreach($academicYears as $year)
-            <option value="{{ $year->id }}">
-                {{ $year->name }}
-                @if($year->is_active)
-                    (Aktif)
-                @endif
-            </option>
-        @endforeach
-    </select>
-    <div class="invalid-feedback"></div>
-</div>
+                    {{-- HSCode --}}
+                    {{-- <div class="mb-3">
+                        <label for="academic_year_id" class="form-label">Tahun Ajaran <span class="text-danger">*</span></label>
+                        <select class="form-select" id="academic_year_id" name="academic_year_id" required>
+                            <option value="">-- Pilih Tahun Ajaran --</option>
+                            @foreach($academicYears as $year)
+                            <option value="{{ $year->id }}">
+                                {{ $year->name }}
+                                @if($year->is_active)
+                                (Aktif)
+                                @endif
+                            </option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div> --}}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -147,119 +148,162 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-$(document).ready(function() {
-    const table = $('#classroomTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('classrooms.data') }}",
-        columns: [
-            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'name', name: 'name' },
-            // { data: 'description_short', name: 'description' },
-            { data: 'students_count', name: 'students_count' },
-            { data: 'created_at_formatted', name: 'created_at' },
-            { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
-        ],
-        language: {
-            processing: "<div class='spinner-border text-primary' role='status'></div>",
-            search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data"
-        },
-        buttons: [
-            { extend: 'excel', text: '<i class="bi bi-file-earmark-excel"></i> Excel', className: 'btn btn-success btn-sm' },
-            { extend: 'pdf', text: '<i class="bi bi-file-earmark-pdf"></i> PDF', className: 'btn btn-danger btn-sm' }
-        ]
+    $(document).ready(function() {
+        const table = $('#classroomTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('classrooms.data') }}",
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'name',
+                    name: 'name'
+                },
+                // { data: 'description_short', name: 'description' },
+                {
+                    data: 'students_count',
+                    name: 'students_count'
+                },
+                {
+                    data: 'created_at_formatted',
+                    name: 'created_at'
+                },
+                {
+                    data: 'aksi',
+                    name: 'aksi',
+                    orderable: false,
+                    searchable: false
+                }
+            ],
+            language: {
+                processing: "<div class='spinner-border text-primary' role='status'></div>",
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data"
+            },
+            buttons: [{
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                    className: 'btn btn-success btn-sm'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                    className: 'btn btn-danger btn-sm'
+                }
+            ]
+        });
+
+        $('#classroomForm').on('submit', function(e) {
+            e.preventDefault();
+            const id = $('#classroom_id').val();
+            let url = id ? "{{ url('admin/classrooms') }}/" + id : "{{ route('classrooms.store') }}";
+            let method = id ? 'POST' : 'POST';
+
+            if (id) {
+                if ($('#classroomForm input[name="_method"]').length === 0) {
+                    $('#classroomForm').append('<input type="hidden" name="_method" value="PUT">');
+                }
+            } else {
+                $('#classroomForm input[name="_method"]').remove();
+            }
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: $(this).serialize(),
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#modalClassroom').modal('hide');
+                        resetForm();
+                        table.ajax.reload();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: response.message,
+                            timer: 2000
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        $('.is-invalid').removeClass('is-invalid');
+                        $('.invalid-feedback').text('');
+                        $.each(errors, function(key, value) {
+                            $('[name="' + key + '"]').addClass('is-invalid').siblings('.invalid-feedback').text(value[0]);
+                        });
+                    }
+                }
+            });
+        });
     });
 
-    $('#classroomForm').on('submit', function(e) {
-        e.preventDefault();
-        const id = $('#classroom_id').val();
-        let url = id ? "{{ url('admin/classrooms') }}/" + id : "{{ route('classrooms.store') }}";
-        let method = id ? 'POST' : 'POST';
-        
-        if (id) {
-            if ($('#classroomForm input[name="_method"]').length === 0) {
-                $('#classroomForm').append('<input type="hidden" name="_method" value="PUT">');
-            }
-        } else {
-            $('#classroomForm input[name="_method"]').remove();
-        }
-        
+    function editClassroom(id) {
         $.ajax({
-            url: url,
-            type: method,
-            data: $(this).serialize(),
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            url: "{{ url('admin/classrooms') }}/" + id + "/edit",
+            type: "GET",
+            success: function(data) {
+                $('#classroom_id').val(data.id);
+                $('#name').val(data.name);
+                $('#description').val(data.description);
+                $('#academic_year_id').val(data.academic_year_id); // tambahkan ini
+                $('#modalClassroomLabel').text('Edit Data Kelas');
+                $('#modalClassroom').modal('show');
+            }
+        });
+    }
+
+    function confirmDelete(id, name) {
+        $('#hapus_id').val(id);
+        $('#classroom_name').text(name);
+        $('#modalHapus').modal('show');
+    }
+
+    function deleteClassroom() {
+        const id = $('#hapus_id').val();
+        $.ajax({
+            url: "{{ url('admin/classrooms') }}/" + id,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
             success: function(response) {
                 if (response.success) {
-                    $('#modalClassroom').modal('hide');
-                    resetForm();
-                    table.ajax.reload();
-                    Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000 });
-                }
-            },
-            error: function(xhr) {
-                if (xhr.status === 422) {
-                    const errors = xhr.responseJSON.errors;
-                    $('.is-invalid').removeClass('is-invalid');
-                    $('.invalid-feedback').text('');
-                    $.each(errors, function(key, value) {
-                        $('[name="' + key + '"]').addClass('is-invalid').siblings('.invalid-feedback').text(value[0]);
+                    $('#modalHapus').modal('hide');
+                    $('#classroomTable').DataTable().ajax.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message,
+                        timer: 2000
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message
                     });
                 }
             }
         });
-    });
-});
+    }
 
-function editClassroom(id) {
-    $.ajax({
-        url: "{{ url('admin/classrooms') }}/" + id + "/edit",
-        type: "GET",
-        success: function(data) {
-            $('#classroom_id').val(data.id);
-            $('#name').val(data.name);
-            $('#description').val(data.description);
-            $('#academic_year_id').val(data.academic_year_id); // tambahkan ini
-            $('#modalClassroomLabel').text('Edit Data Kelas');
-            $('#modalClassroom').modal('show');
-        }
-    });
-}
-
-function confirmDelete(id, name) {
-    $('#hapus_id').val(id);
-    $('#classroom_name').text(name);
-    $('#modalHapus').modal('show');
-}
-
-function deleteClassroom() {
-    const id = $('#hapus_id').val();
-    $.ajax({
-        url: "{{ url('admin/classrooms') }}/" + id,
-        type: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        success: function(response) {
-            if (response.success) {
-                $('#modalHapus').modal('hide');
-                $('#classroomTable').DataTable().ajax.reload();
-                Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000 });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Gagal!', text: response.message });
-            }
-        }
-    });
-}
-
-function resetForm() {
-    $('#classroomForm')[0].reset();
-    $('#classroom_id').val('');
-    $('#modalClassroomLabel').text('Tambah Data Kelas');
-    $('.is-invalid').removeClass('is-invalid');
-    $('#classroomForm input[name="_method"]').remove();
-    // Reset dropdown ke pilihan pertama (kosong)
-    $('#academic_year_id').val('');
-}
+    function resetForm() {
+        $('#classroomForm')[0].reset();
+        $('#classroom_id').val('');
+        $('#modalClassroomLabel').text('Tambah Data Kelas');
+        $('.is-invalid').removeClass('is-invalid');
+        $('#classroomForm input[name="_method"]').remove();
+        // Reset dropdown ke pilihan pertama (kosong)
+        $('#academic_year_id').val('');
+    }
 </script>
 @endpush
