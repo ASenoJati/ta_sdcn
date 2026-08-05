@@ -152,7 +152,8 @@
         </div>
 
         <!-- Card Manajemen Materi -->
-        <div class="row mt-4">
+        {{-- HSCode --}}
+        {{-- <div class="row mt-4">
             <div class="col-12">
                 <div class="card card-warning">
                     <div class="card-header">
@@ -216,8 +217,8 @@
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-danger btn-sm" onclick="deleteMaterial({{ $journal->id }}, {{ $material->id }})">
-    <i class="bi bi-trash"></i>
-</button>
+                                                         <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -230,7 +231,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Tabel Daftar Presensi Siswa -->
         <div class="row">
