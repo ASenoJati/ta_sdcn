@@ -18,14 +18,23 @@ class FirebaseNotificationService
         $this->messaging = $factory->createMessaging();
     }
 
+    /**
+     * Kirim notifikasi ke satu perangkat
+     */
     public function sendToDevice(string $deviceToken, string $title, string $body, array $data = [])
     {
         try {
             $notification = Notification::create($title, $body);
-            $message = CloudMessage::withTarget('token', $deviceToken)
+
+            // Membuat CloudMessage dengan target token
+            $message = CloudMessage::new()
                 ->withNotification($notification)
-                ->withData($data);
+                ->withData($data)
+                ->withToken($deviceToken);
+
             $this->messaging->send($message);
+
+            Log::info('Push notification sent', ['token' => $deviceToken]);
             return ['success' => true];
         } catch (\Exception $e) {
             Log::error('FCM send error: ' . $e->getMessage());
@@ -33,15 +42,14 @@ class FirebaseNotificationService
         }
     }
 
+    /**
+     * Kirim notifikasi ke banyak perangkat
+     */
     public function sendToMultipleDevices(array $tokens, string $title, string $body, array $data = [])
     {
         $results = [];
         foreach ($tokens as $token) {
-            $result = $this->sendToDevice($token, $title, $body, $data);
-            $results[] = $result;
-            if (!$result['success']) {
-                Log::error('Gagal kirim ke token: ' . $token . ' - ' . ($result['error'] ?? 'unknown error'));
-            }
+            $results[] = $this->sendToDevice($token, $title, $body, $data);
         }
         return $results;
     }
