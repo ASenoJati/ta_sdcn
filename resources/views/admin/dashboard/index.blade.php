@@ -26,56 +26,57 @@
 <div class="app-content">
     <div class="container-fluid">
         <!-- Filter Tahun Ajaran -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card card-outline card-primary">
-            <div class="card-body py-2">
-                <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-center">
-                    <div class="col-auto">
-                        <label for="academic_year_filter" class="col-form-label fw-bold">
-                            <i class="bi bi-calendar-range me-1"></i> Tahun Ajaran:
-                        </label>
+        {{-- HSCode --}}
+        {{-- <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card card-outline card-primary">
+                    <div class="card-body py-2">
+                        <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <label for="academic_year_filter" class="col-form-label fw-bold">
+                                    <i class="bi bi-calendar-range me-1"></i> Tahun Ajaran:
+                                </label>
+                            </div>
+                            <div class="col-auto">
+                                <select name="academic_year_id" id="academic_year_filter" class="form-select" onchange="this.form.submit()">
+                                    <option value="">-- Semua --</option>
+                                    @foreach($academicYears as $year)
+                                    <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
+                                        {{ $year->name }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-funnel me-1"></i> Filter
+                                </button>
+                            </div>
+                            @if(request('academic_year_id'))
+                            <div class="col-auto">
+                                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i> Reset
+                                </a>
+                            </div>
+                            @endif
+                        </form>
                     </div>
-                    <div class="col-auto">
-                        <select name="academic_year_id" id="academic_year_filter" class="form-select" onchange="this.form.submit()">
-                            <option value="">-- Semua --</option>
-                            @foreach($academicYears as $year)
-                                <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
-                                    {{ $year->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-funnel me-1"></i> Filter
-                        </button>
-                    </div>
-                    @if(request('academic_year_id'))
-                        <div class="col-auto">
-                            <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Reset
-                            </a>
-                        </div>
-                    @endif
-                </form>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4 text-end">
-        @if($academicYearId)
-            @php $selected = $academicYears->firstWhere('id', $academicYearId); @endphp
-            <span class="badge bg-info fs-6 p-2">
-                <i class="bi bi-calendar-check me-1"></i> 
-                {{ $selected ? $selected->name : 'Semua' }}
-            </span>
-        @else
-            <span class="badge bg-secondary fs-6 p-2">
-                <i class="bi bi-calendar me-1"></i> Semua Tahun
-            </span>
-        @endif
-    </div>
-</div>
+            <div class="col-md-4 text-end">
+                @if($academicYearId)
+                @php $selected = $academicYears->firstWhere('id', $academicYearId); @endphp
+                <span class="badge bg-info fs-6 p-2">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    {{ $selected ? $selected->name : 'Semua' }}
+                </span>
+                @else
+                <span class="badge bg-secondary fs-6 p-2">
+                    <i class="bi bi-calendar me-1"></i> Semua Tahun
+                </span>
+                @endif
+            </div>
+        </div> --}}
         <!-- Info Boxes -->
         <div class="row">
             <div class="col-lg-3 col-6">
@@ -90,7 +91,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-success">
                     <div class="inner">
@@ -103,7 +104,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-warning">
                     <div class="inner">
@@ -116,7 +117,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-danger">
                     <div class="inner">
@@ -130,7 +131,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Second Row Info Boxes -->
         <div class="row">
             <div class="col-lg-3 col-6">
@@ -145,7 +146,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-secondary">
                     <div class="inner">
@@ -158,7 +159,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-dark">
                     <div class="inner">
@@ -171,7 +172,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-purple" style="background-color: #6f42c1;">
                     <div class="inner">
@@ -185,7 +186,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Charts Row -->
         <div class="row">
             <div class="col-lg-8">
@@ -206,7 +207,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
@@ -222,7 +223,7 @@
                     </div>
                     <div class="card-body">
                         <canvas id="attendanceStatusChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                        
+
                         <div class="row text-center mt-3">
                             <div class="col-4">
                                 <div class="alert alert-success mb-0">
@@ -247,7 +248,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Second Row Charts -->
         <div class="row">
             <div class="col-lg-6 mt-4">
@@ -268,7 +269,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-6 mt-4">
                 <div class="card">
                     <div class="card-header">
@@ -288,46 +289,46 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Today's Schedule & Recent Activities -->
         <div class="row mt-4">
             <div class="col-lg-6">
-              <!-- Jadwal Hari Ini -->
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Jadwal Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('l, d F Y') }})</h3>
-    </div>
-    <div class="card-body">
-        @if($todaySchedules->count() > 0)
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mata Pelajaran</th>
-                            <th>Guru</th>
-                            <th>Kelas</th>
-                            <th>Jam</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($todaySchedules as $schedule)
-                            <tr>
-                                <td>{{ $schedule->subject_name }}</td>
-                                <td>{{ $schedule->teacher_name }}</td>
-                                <td>{{ $schedule->classroom_name }}</td>
-                                <td>{{ $schedule->lesson_hour }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <!-- Jadwal Hari Ini -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Jadwal Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('l, d F Y') }})</h3>
+                    </div>
+                    <div class="card-body">
+                        @if($todaySchedules->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Mata Pelajaran</th>
+                                        <th>Guru</th>
+                                        <th>Kelas</th>
+                                        <th>Jam</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($todaySchedules as $schedule)
+                                    <tr>
+                                        <td>{{ $schedule->subject_name }}</td>
+                                        <td>{{ $schedule->teacher_name }}</td>
+                                        <td>{{ $schedule->classroom_name }}</td>
+                                        <td>{{ $schedule->lesson_hour }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <p class="text-muted text-center">Tidak ada jadwal untuk hari ini.</p>
+                        @endif
+                    </div>
+                </div>
             </div>
-        @else
-            <p class="text-muted text-center">Tidak ada jadwal untuk hari ini.</p>
-        @endif
-    </div>
-</div>
-            </div>
-            
+
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
@@ -366,7 +367,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Location Map Row -->
         <div class="row mt-4">
             <div class="col-12">
@@ -385,7 +386,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Quick Stats Cards -->
         <div class="row mt-4 mb-2">
             <div class="col-lg-6">
@@ -413,7 +414,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
@@ -435,7 +436,7 @@
                     </div>
                 </div>
             </div>
-            
+
             {{-- <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
@@ -449,17 +450,17 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span>Laravel Version:</span>
                             <span class="badge bg-secondary fs-6">{{ app()->version() }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>PHP Version:</span>
-                            <span class="badge bg-secondary fs-6">{{ phpversion() }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div> --}}
         </div>
-        
+        <div class="d-flex justify-content-between align-items-center">
+            <span>PHP Version:</span>
+            <span class="badge bg-secondary fs-6">{{ phpversion() }}</span>
+        </div>
     </div>
+</div>
+</div> --}}
+</div>
+
+</div>
 </div>
 <!--end::App Content-->
 @endsection
@@ -480,16 +481,20 @@
         opacity: 0.3;
         transition: transform 0.3s ease;
     }
+
     .small-box:hover .small-box-icon {
         transform: scale(1.1);
     }
+
     .text-bg-purple {
         background-color: #6f42c1 !important;
         color: white !important;
     }
+
     .list-group-item {
         transition: background-color 0.2s ease;
     }
+
     .list-group-item:hover {
         background-color: #f8f9fa;
     }
@@ -503,211 +508,239 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-$(document).ready(function() {
-    
-    // Attendance Chart (Bar Chart)
-    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
-    new Chart(attendanceCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($attendanceChart['labels']) !!},
-            datasets: [
-                {
-                    label: 'Check-in',
-                    data: {!! json_encode($attendanceChart['check_in']) !!},
-                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                    borderColor: '#28a745',
-                    borderWidth: 1
+    $(document).ready(function() {
+
+        // Attendance Chart (Bar Chart)
+        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(attendanceCtx, {
+            type: 'bar',
+            data: {
+                labels: {
+                    !!json_encode($attendanceChart['labels']) !!
                 },
-                {
-                    label: 'Check-out',
-                    data: {!! json_encode($attendanceChart['check_out']) !!},
-                    backgroundColor: 'rgba(23, 162, 184, 0.7)',
-                    borderColor: '#17a2b8',
+                datasets: [{
+                        label: 'Check-in',
+                        data: {
+                            !!json_encode($attendanceChart['check_in']) !!
+                        },
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Check-out',
+                        data: {
+                            !!json_encode($attendanceChart['check_out']) !!
+                        },
+                        backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                        borderColor: '#17a2b8',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Attendance Status Chart (Pie Chart)
+        const statusCtx = document.getElementById('attendanceStatusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Tepat Waktu', 'Terlambat', 'Tidak Hadir'],
+                datasets: [{
+                    data: [{
+                            {
+                                $attendanceStatusChart['present']
+                            }
+                        },
+                        {
+                            {
+                                $attendanceStatusChart['late']
+                            }
+                        },
+                        {
+                            {
+                                $attendanceStatusChart['absent']
+                            }
+                        }
+                    ],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Journal Chart (Line Chart)
+        const journalCtx = document.getElementById('journalChart').getContext('2d');
+        new Chart(journalCtx, {
+            type: 'line',
+            data: {
+                labels: {
+                    !!json_encode($journalChart['labels']) !!
+                },
+                datasets: [{
+                    label: 'Jumlah Jurnal',
+                    data: {
+                        !!json_encode($journalChart['data']) !!
+                    },
+                    fill: true,
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: '#007bff',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: '#007bff',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Top Subjects Chart (Horizontal Bar Chart)
+        const subjectsCtx = document.getElementById('topSubjectsChart').getContext('2d');
+        new Chart(subjectsCtx, {
+            type: 'bar',
+            data: {
+                labels: {
+                    !!json_encode($topSubjects - > pluck('name')) !!
+                },
+                datasets: [{
+                    label: 'Jumlah Jadwal',
+                    data: {
+                        !!json_encode($topSubjects - > pluck('total')) !!
+                    },
+                    backgroundColor: 'rgba(111, 66, 193, 0.7)',
+                    borderColor: '#6f42c1',
                     borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
                     }
                 }
             }
-        }
-    });
-    
-    // Attendance Status Chart (Pie Chart)
-    const statusCtx = document.getElementById('attendanceStatusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Tepat Waktu', 'Terlambat', 'Tidak Hadir'],
-            datasets: [{
-                data: [
-                    {{ $attendanceStatusChart['present'] }}, 
-                    {{ $attendanceStatusChart['late'] }}, 
-                    {{ $attendanceStatusChart['absent'] }}
-                ],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                }
+        });
+
+        // Initialize Map
+        const locations = {
+            !!json_encode($attendanceLocations) !!
+        };
+
+        if (locations.length > 0 && document.getElementById('attendanceMap')) {
+            // Calculate center based on first location or default
+            let centerLat = -6.200000;
+            let centerLng = 106.816666;
+
+            if (locations.length > 0) {
+                const totalLat = locations.reduce((sum, loc) => sum + parseFloat(loc.latitude), 0);
+                const totalLng = locations.reduce((sum, loc) => sum + parseFloat(loc.longitude), 0);
+                centerLat = totalLat / locations.length;
+                centerLng = totalLng / locations.length;
             }
-        }
-    });
-    
-    // Journal Chart (Line Chart)
-    const journalCtx = document.getElementById('journalChart').getContext('2d');
-    new Chart(journalCtx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode($journalChart['labels']) !!},
-            datasets: [{
-                label: 'Jumlah Jurnal',
-                data: {!! json_encode($journalChart['data']) !!},
-                fill: true,
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                borderColor: '#007bff',
-                borderWidth: 2,
-                tension: 0.4,
-                pointBackgroundColor: '#007bff',
-                pointBorderColor: '#fff',
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-    
-    // Top Subjects Chart (Horizontal Bar Chart)
-    const subjectsCtx = document.getElementById('topSubjectsChart').getContext('2d');
-    new Chart(subjectsCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($topSubjects->pluck('name')) !!},
-            datasets: [{
-                label: 'Jumlah Jadwal',
-                data: {!! json_encode($topSubjects->pluck('total')) !!},
-                backgroundColor: 'rgba(111, 66, 193, 0.7)',
-                borderColor: '#6f42c1',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-    
-    // Initialize Map
-    const locations = {!! json_encode($attendanceLocations) !!};
-    
-    if (locations.length > 0 && document.getElementById('attendanceMap')) {
-        // Calculate center based on first location or default
-        let centerLat = -6.200000;
-        let centerLng = 106.816666;
-        
-        if (locations.length > 0) {
-            const totalLat = locations.reduce((sum, loc) => sum + parseFloat(loc.latitude), 0);
-            const totalLng = locations.reduce((sum, loc) => sum + parseFloat(loc.longitude), 0);
-            centerLat = totalLat / locations.length;
-            centerLng = totalLng / locations.length;
-        }
-        
-        const map = L.map('attendanceMap').setView([centerLat, centerLng], 12);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
-        
-        // Add markers
-        locations.forEach(location => {
-            const statusColor = location.status === 'present' ? 'green' : (location.status === 'late' ? 'orange' : 'red');
-            const markerHtml = `
+
+            const map = L.map('attendanceMap').setView([centerLat, centerLng], 12);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add markers
+            locations.forEach(location => {
+                const statusColor = location.status === 'present' ? 'green' : (location.status === 'late' ? 'orange' : 'red');
+                const markerHtml = `
                 <div style="background-color: ${statusColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>
             `;
-            
-            const customIcon = L.divIcon({
-                html: markerHtml,
-                className: 'custom-marker',
-                iconSize: [20, 20],
-                popupAnchor: [0, -10]
-            });
-            
-            const marker = L.marker([parseFloat(location.latitude), parseFloat(location.longitude)], { icon: customIcon })
-                .addTo(map)
-                .bindPopup(`
+
+                const customIcon = L.divIcon({
+                    html: markerHtml,
+                    className: 'custom-marker',
+                    iconSize: [20, 20],
+                    popupAnchor: [0, -10]
+                });
+
+                const marker = L.marker([parseFloat(location.latitude), parseFloat(location.longitude)], {
+                        icon: customIcon
+                    })
+                    .addTo(map)
+                    .bindPopup(`
                     <b>${location.name}</b><br>
                     Waktu: ${location.time}<br>
                     Status: ${location.status === 'present' ? 'Tepat Waktu' : (location.status === 'late' ? 'Terlambat' : '-')}
                 `);
-        });
-    } else if (document.getElementById('attendanceMap')) {
-        document.getElementById('attendanceMap').innerHTML = '<div class="alert alert-info text-center h-100 d-flex align-items-center justify-content-center">Belum ada data presensi hari ini</div>';
-    }
-    
-    // Auto refresh charts every 30 seconds
-    setInterval(function() {
-        $.ajax({
-            url: "{{ route('admin.dashboard.charts') }}",
-            type: "GET",
-            success: function(response) {
-                console.log('Charts refreshed');
-                // Update charts if needed
-            }
-        });
-    }, 30000);
-    
-});
+            });
+        } else if (document.getElementById('attendanceMap')) {
+            document.getElementById('attendanceMap').innerHTML = '<div class="alert alert-info text-center h-100 d-flex align-items-center justify-content-center">Belum ada data presensi hari ini</div>';
+        }
+
+        // Auto refresh charts every 30 seconds
+        setInterval(function() {
+            $.ajax({
+                url: "{{ route('admin.dashboard.charts') }}",
+                type: "GET",
+                success: function(response) {
+                    console.log('Charts refreshed');
+                    // Update charts if needed
+                }
+            });
+        }, 30000);
+
+    });
 </script>
 @endpush

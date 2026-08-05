@@ -6,8 +6,8 @@
             <!--begin::Brand Image-->
             {{-- <img
                 src="{{ asset('assets/img/AdminLTELogo.png') }}"
-                alt="AdminLTE Logo"
-                class="brand-image opacity-75 shadow" /> --}}
+            alt="AdminLTE Logo"
+            class="brand-image opacity-75 shadow" /> --}}
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
             <span class="brand-text fw-light">SDCN</span>
@@ -35,19 +35,20 @@
                 </li>
 
                 <!-- Tahun Ajaran -->
-<li class="nav-item">
-    <a href="{{ route('academic-years.index') }}" class="nav-link {{ request()->routeIs('academic-years.*') ? 'active' : '' }}">
-        <i class="nav-icon bi bi-calendar-range"></i>
-        <p>Tahun Ajaran</p>
-    </a>
-</li>
+                <!-- HSCode -->
+                <!-- <li class="nav-item">
+                    <a href="{{ route('academic-years.index') }}" class="nav-link {{ request()->routeIs('academic-years.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-calendar-range"></i>
+                        <p>Tahun Ajaran</p>
+                    </a>
+                </li> -->
 
                 <li class="nav-header">SISWA</li>
                 {{-- <li class="nav-item">
                     <a href="{{ route('students.index') }}" class="nav-link {{ request()->routeIs('students.*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-people"></i>
-                        <p>Data Siswa</p>
-                    </a>
+                <i class="nav-icon bi bi-people"></i>
+                <p>Data Siswa</p>
+                </a>
                 </li> --}}
                 <li class="nav-item">
                     <a href="{{ route('classrooms.index') }}" class="nav-link {{ request()->routeIs('classrooms.*') ? 'active' : '' }}">
@@ -81,7 +82,7 @@
                         <p>Jadwal Mengajar</p>
                     </a>
                 </li>
-                 <li class="nav-item">
+                <li class="nav-item">
                     <a href="{{ route('teaching-journals.index') }}" class="nav-link {{ request()->routeIs('teaching-journals.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-calendar-check"></i>
                         <p>Jurnal Mengajar</p>
@@ -108,7 +109,7 @@
                         <p>Waktu Presensi</p>
                     </a>
                 </li>
-                 <li class="nav-item">
+                <li class="nav-item">
                     <a href="{{ route('user-attendances.index') }}" class="nav-link {{ request()->routeIs('user-attendances.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-clipboard-check"></i>
                         <p>Data Presensi Guru</p>
