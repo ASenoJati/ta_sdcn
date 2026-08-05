@@ -515,23 +515,17 @@
         new Chart(attendanceCtx, {
             type: 'bar',
             data: {
-                labels: {
-                    !!json_encode($attendanceChart['labels']) !!
-                },
+                labels: {!!json_encode($attendanceChart['labels']) !!},
                 datasets: [{
                         label: 'Check-in',
-                        data: {
-                            !!json_encode($attendanceChart['check_in']) !!
-                        },
+                        data: {!!json_encode($attendanceChart['check_in']) !!},
                         backgroundColor: 'rgba(40, 167, 69, 0.7)',
                         borderColor: '#28a745',
                         borderWidth: 1
                     },
                     {
                         label: 'Check-out',
-                        data: {
-                            !!json_encode($attendanceChart['check_out']) !!
-                        },
+                        data: {!!json_encode($attendanceChart['check_out']) !!},
                         backgroundColor: 'rgba(23, 162, 184, 0.7)',
                         borderColor: '#17a2b8',
                         borderWidth: 1
@@ -564,21 +558,7 @@
             data: {
                 labels: ['Tepat Waktu', 'Terlambat', 'Tidak Hadir'],
                 datasets: [{
-                    data: [{
-                            {
-                                $attendanceStatusChart['present']
-                            }
-                        },
-                        {
-                            {
-                                $attendanceStatusChart['late']
-                            }
-                        },
-                        {
-                            {
-                                $attendanceStatusChart['absent']
-                            }
-                        }
+                    data: [{{$attendanceStatusChart['present']}}, {{$attendanceStatusChart['late']}},{{$attendanceStatusChart['absent']}}
                     ],
                     backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
                     borderWidth: 0
@@ -600,14 +580,10 @@
         new Chart(journalCtx, {
             type: 'line',
             data: {
-                labels: {
-                    !!json_encode($journalChart['labels']) !!
-                },
+                labels: {!!json_encode($journalChart['labels']) !!},
                 datasets: [{
                     label: 'Jumlah Jurnal',
-                    data: {
-                        !!json_encode($journalChart['data']) !!
-                    },
+                    data: {!!json_encode($journalChart['data']) !!},
                     fill: true,
                     backgroundColor: 'rgba(0, 123, 255, 0.2)',
                     borderColor: '#007bff',
@@ -643,14 +619,10 @@
         new Chart(subjectsCtx, {
             type: 'bar',
             data: {
-                labels: {
-                    !!json_encode($topSubjects - > pluck('name')) !!
-                },
+                labels: {!!json_encode($topSubjects-> pluck('name')) !!},
                 datasets: [{
                     label: 'Jumlah Jadwal',
-                    data: {
-                        !!json_encode($topSubjects - > pluck('total')) !!
-                    },
+                    data: {!!json_encode($topSubjects-> pluck('total')) !!},
                     backgroundColor: 'rgba(111, 66, 193, 0.7)',
                     borderColor: '#6f42c1',
                     borderWidth: 1
@@ -677,9 +649,7 @@
         });
 
         // Initialize Map
-        const locations = {
-            !!json_encode($attendanceLocations) !!
-        };
+        const locations = {!!json_encode($attendanceLocations) !!};
 
         if (locations.length > 0 && document.getElementById('attendanceMap')) {
             // Calculate center based on first location or default
