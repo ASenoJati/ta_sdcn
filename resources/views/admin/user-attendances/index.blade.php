@@ -266,7 +266,7 @@ function displayDetail(data) {
     
     const html = `
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="card attendance-detail-card">
                     <div class="card-header bg-info text-white">
                         <i class="bi bi-person-badge"></i> Informasi Guru
@@ -288,31 +288,7 @@ function displayDetail(data) {
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card attendance-detail-card">
-                    <div class="card-header bg-success text-white">
-                        <i class="bi bi-clock-history"></i> Informasi Presensi
-                    </div>
-                    <div class="card-body">
-                        <div class="info-label">Tanggal Presensi</div>
-                        <div class="info-value"><strong>${data.attendance_date_formatted}</strong></div>
-                        
-                        <div class="info-label">Check-in Time</div>
-                        <div class="info-value">${data.check_in_time_formatted} ${data.check_in_status_badge}</div>
-                        
-                        <div class="info-label">Check-out Time</div>
-                        <div class="info-value">${data.check_out_time_formatted} ${data.check_out_status_badge || '<span class="badge bg-secondary">Belum Check-out</span>'}</div>
-                        
-                        <div class="info-label">Durasi Kerja</div>
-                        <div class="info-value"><span class="badge bg-primary">${data.work_duration}</span></div>
-                        
-                        ${data.notes ? `
-                        <div class="info-label">Catatan</div>
-                        <div class="info-value">${data.notes}</div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
+           
         </div>
         
         <div class="row">
