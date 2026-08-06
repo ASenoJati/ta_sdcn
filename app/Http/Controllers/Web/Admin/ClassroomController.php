@@ -129,8 +129,7 @@ class ClassroomController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:classrooms,name',
                 'description' => 'nullable|string',
-                // HSCode
-                // 'academic_year_id' => 'required|exists:academic_years,id',
+                'academic_year_id' => 'required|exists:academic_years,id',
             ]);
 
             if ($validator->fails()) {
@@ -166,8 +165,7 @@ class ClassroomController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:classrooms,name,' . $id,
                 'description' => 'nullable|string',
-                // HSCode
-                // 'academic_year_id' => 'required|exists:academic_years,id',
+                'academic_year_id' => 'required|exists:academic_years,id',
             ]);
 
             if ($validator->fails()) {

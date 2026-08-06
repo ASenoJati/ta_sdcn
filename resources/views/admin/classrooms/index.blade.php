@@ -81,8 +81,7 @@
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
-                    {{-- HSCode --}}
-                    {{-- <div class="mb-3">
+                    <div class="mb-3">
                         <label for="academic_year_id" class="form-label">Tahun Ajaran <span class="text-danger">*</span></label>
                         <select class="form-select" id="academic_year_id" name="academic_year_id" required>
                             <option value="">-- Pilih Tahun Ajaran --</option>
@@ -96,7 +95,7 @@
                             @endforeach
                         </select>
                         <div class="invalid-feedback"></div>
-                    </div> --}}
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>

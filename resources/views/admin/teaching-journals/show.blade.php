@@ -152,8 +152,7 @@
         </div>
 
         <!-- Card Manajemen Materi -->
-        {{-- HSCode --}}
-        {{-- <div class="row mt-4">
+        <div class="row mt-4">
             <div class="col-12">
                 <div class="card card-warning">
                     <div class="card-header">
@@ -231,7 +230,7 @@
                     </div>
                 </div>
             </div>
-        </div> --}}
+        </div>
 
         <!-- Tabel Daftar Presensi Siswa -->
         <div class="row">
