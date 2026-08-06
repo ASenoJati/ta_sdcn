@@ -26,8 +26,7 @@
 <div class="app-content">
     <div class="container-fluid">
         <!-- Filter Tahun Ajaran -->
-        {{-- HSCode --}}
-        {{-- <div class="row mb-4">
+        <div class="row mb-4">
             <div class="col-md-8">
                 <div class="card card-outline card-primary">
                     <div class="card-body py-2">
@@ -76,7 +75,7 @@
                 </span>
                 @endif
             </div>
-        </div> --}}
+        </div>
         <!-- Info Boxes -->
         <div class="row">
             <div class="col-lg-3 col-6">

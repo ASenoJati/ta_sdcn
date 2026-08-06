@@ -35,21 +35,15 @@
                 </li>
 
                 <!-- Tahun Ajaran -->
-                <!-- HSCode -->
-                {{-- <li class="nav-item">
+                <li class="nav-item">
                     <a href="{{ route('academic-years.index') }}" class="nav-link {{ request()->routeIs('academic-years.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-calendar-range"></i>
                         <p>Tahun Ajaran</p>
                     </a>
-                </li> --}}
+                </li>
 
                 <li class="nav-header">SISWA</li>
-                {{-- <li class="nav-item">
-                    <a href="{{ route('students.index') }}" class="nav-link {{ request()->routeIs('students.*') ? 'active' : '' }}">
-                <i class="nav-icon bi bi-people"></i>
-                <p>Data Siswa</p>
-                </a>
-                </li> --}}
+        
                 <li class="nav-item">
                     <a href="{{ route('classrooms.index') }}" class="nav-link {{ request()->routeIs('classrooms.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-building"></i>
