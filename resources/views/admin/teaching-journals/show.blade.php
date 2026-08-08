@@ -92,63 +92,72 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <!-- Card Ringkasan Presensi -->
-                <div class="card card-success card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="bi bi-clipboard-check me-2"></i> Ringkasan Presensi
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        @php
-                        $summary = $journal->attendance_summary;
-                        @endphp
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="info-box bg-success">
-                                    <span class="info-box-icon"><i class="bi bi-check-circle"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Hadir</span>
-                                        <span class="info-box-number">{{ $summary['hadir'] ?? 0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="info-box bg-warning">
-                                    <span class="info-box-icon"><i class="bi bi-clock"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Izin</span>
-                                        <span class="info-box-number">{{ $summary['izin'] ?? 0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="info-box bg-info">
-                                    <span class="info-box-icon"><i class="bi bi-heart"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Sakit</span>
-                                        <span class="info-box-number">{{ $summary['sakit'] ?? 0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="info-box bg-danger">
-                                    <span class="info-box-icon"><i class="bi bi-x-circle"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Alpa</span>
-                                        <span class="info-box-number">{{ $summary['alpa'] ?? 0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
+         <div class="col-md-4">
+    <!-- Card Ringkasan Presensi -->
+    <div class="card card-success card-outline shadow-sm">
+        <div class="card-header">
+            <h3 class="card-title fw-bold text-dark mb-0">
+                <i class="bi bi-clipboard-check me-2"></i> Ringkasan Presensi
+            </h3>
+        </div>
+        <div class="card-body">
+            @php
+            $summary = $journal->attendance_summary;
+            @endphp
+            <div class="row text-center g-2">
+                <!-- Hadir: Latar Hijau Gelap, Teks Putih Terang -->
+                <div class="col-6 mb-2">
+                    <div class="info-box bg-success text-white">
+                        <span class="info-box-icon text-white"><i class="bi bi-check-circle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text fw-semibold">Hadir</span>
+                            <span class="info-box-number fw-bold fs-5">{{ $summary['hadir'] ?? 0 }}</span>
                         </div>
-                        <hr>
-                        <div class="text-center">
-                            <strong>Total Siswa: {{ $summary['total'] ?? 0 }}</strong>
+                    </div>
+                </div>
+
+                <!-- Izin: Latar Kuning Terang, Teks Gelap/Hitam -->
+                <div class="col-6 mb-2">
+                    <div class="info-box bg-warning text-dark">
+                        <span class="info-box-icon text-dark"><i class="bi bi-clock"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text fw-semibold">Izin</span>
+                            <span class="info-box-number fw-bold fs-5">{{ $summary['izin'] ?? 0 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sakit: Latar Biru Gelap, Teks Putih Terang -->
+                <div class="col-6 mb-2">
+                    <div class="info-box bg-info text-white">
+                        <span class="info-box-icon text-white"><i class="bi bi-heart"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text fw-semibold">Sakit</span>
+                            <span class="info-box-number fw-bold fs-5">{{ $summary['sakit'] ?? 0 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alpa: Latar Merah Gelap, Teks Putih Terang -->
+                <div class="col-6 mb-2">
+                    <div class="info-box bg-danger text-white">
+                        <span class="info-box-icon text-white"><i class="bi bi-x-circle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text fw-semibold">Alpa</span>
+                            <span class="info-box-number fw-bold fs-5">{{ $summary['alpa'] ?? 0 }}</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <hr class="my-3">
+
+            <div class="text-center text-dark">
+                <strong class="fs-6 fw-bold">Total Siswa: {{ $summary['total'] ?? 0 }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
         </div>
 
         <!-- Card Manajemen Materi -->
