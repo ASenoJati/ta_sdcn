@@ -233,65 +233,68 @@
         </div>
 
         <!-- Tabel Daftar Presensi Siswa -->
-        <div class="row">
-            <div class="col-12 mt-4">
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="bi bi-people me-2"></i> Daftar Presensi Siswa
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>NIS</th>
-                                        <th>Nama Siswa</th>
-                                        <th>Status</th>
-                                        <th>Waktu Presensi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($journal->attendances as $index => $attendance)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $attendance->student->nis ?? '-' }}</td>
-                                        <td>{{ $attendance->student->name ?? '-' }}</td>
-                                        <td>
-                                            @php
-                                            $statusMap = [
-                                            'hadir' => 'success',
-                                            'izin' => 'warning',
-                                            'sakit' => 'info',
-                                            'alpa' => 'danger'
-                                            ];
-                                            $labelMap = [
-                                            'hadir' => 'Hadir',
-                                            'izin' => 'Izin',
-                                            'sakit' => 'Sakit',
-                                            'alpa' => 'Alpa'
-                                            ];
-                                            @endphp
-                                            <span class="badge bg-{{ $statusMap[$attendance->status] ?? 'secondary' }}">
-                                                {{ $labelMap[$attendance->status] ?? $attendance->status }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $attendance->created_at ? $attendance->created_at->translatedFormat('d F Y H:i') : '-' }}</td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center">Belum ada data presensi</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+       <!-- Tabel Daftar Presensi Siswa (Hanya yang Tidak Hadir) -->
+<div class="row">
+    <div class="col-12 mt-4">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="bi bi-people me-2"></i> Daftar Siswa Tidak Hadir
+                    <span class="badge bg-warning ms-2">{{ $filteredAttendances->count() }} Siswa</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                @if($filteredAttendances->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>NIS</th>
+                                <th>Nama Siswa</th>
+                                <th>Status</th>
+                                <th>Waktu Presensi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($filteredAttendances as $index => $attendance)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $attendance->student->nis ?? '-' }}</td>
+                                <td>{{ $attendance->student->name ?? '-' }}</td>
+                                <td>
+                                    @php
+                                    $statusMap = [
+                                    'izin' => 'warning',
+                                    'sakit' => 'info',
+                                    'alpa' => 'danger'
+                                    ];
+                                    $labelMap = [
+                                    'izin' => 'Izin',
+                                    'sakit' => 'Sakit',
+                                    'alpa' => 'Alpa'
+                                    ];
+                                    @endphp
+                                    <span class="badge bg-{{ $statusMap[$attendance->status] ?? 'secondary' }}">
+                                        {{ $labelMap[$attendance->status] ?? $attendance->status }}
+                                    </span>
+                                </td>
+                                <td>{{ $attendance->created_at ? $attendance->created_at->translatedFormat('d F Y H:i') : '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
+                @else
+                <div class="alert alert-success text-center">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <strong>Semua siswa hadir!</strong> Tidak ada siswa yang izin, sakit, atau alpa.
+                </div>
+                @endif
             </div>
         </div>
+    </div>
+</div>
     </div>
 </div>
 <!--end::App Content-->

@@ -107,7 +107,13 @@ class TeachingJournalController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.teaching-journals.show', compact('journal', 'classroomStudents'));
+        // 🔥 FILTER: Hanya tampilkan siswa yang tidak hadir (izin, sakit, alpa)
+        $filteredAttendances = $journal->attendances->filter(function ($attendance) {
+            return in_array($attendance->status, ['izin', 'sakit', 'alpa']);
+        });
+
+        // Kirim filtered attendances ke view
+        return view('admin.teaching-journals.show', compact('journal', 'classroomStudents', 'filteredAttendances'));
     }
 
     // Method untuk menyimpan materi (via AJAX)
