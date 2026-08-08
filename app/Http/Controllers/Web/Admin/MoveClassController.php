@@ -53,7 +53,6 @@ class MoveClassController extends Controller
 
         return response()->json($response);
     }
-
     /**
      * Process move students to new classroom.
      */
