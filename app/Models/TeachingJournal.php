@@ -98,4 +98,15 @@ class TeachingJournal extends Model
         }
         return $this->materials()->where('is_for_all_students', true)->get();
     }
+
+    public function schedules()
+    {
+        return $this->belongsToMany(TeachingSchedule::class, 'journal_schedules');
+    }
+
+    // Tambahkan method untuk mendapatkan semua jam pelajaran yang tergabung
+    public function getLessonHoursAttribute()
+    {
+        return $this->schedules->pluck('lessonHour')->unique('id');
+    }
 }
