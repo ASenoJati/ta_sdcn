@@ -224,21 +224,6 @@
                 btnLogin.classList.add('btn-loading');
             });
         }
-        
-        // Google Login demo alert
-        // const googleBtn = document.getElementById('googleLoginBtn');
-        // if (googleBtn) {
-        //     googleBtn.addEventListener('click', function(e) {
-        //         e.preventDefault();
-        //         Swal.fire({
-        //             icon: 'info',
-        //             title: 'Fitur Google Login',
-        //             text: 'Fitur ini akan segera tersedia!',
-        //             confirmButtonColor: '#007bff',
-        //             timer: 2000
-        //         });
-        //     });
-        // }
     </script>
 </body>
 @endsection

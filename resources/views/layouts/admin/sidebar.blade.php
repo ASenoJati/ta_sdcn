@@ -3,12 +3,6 @@
     <div class="sidebar-brand">
         <!--begin::Brand Link-->
         <a href="./index.html" class="brand-link">
-            <!--begin::Brand Image-->
-            {{-- <img
-                src="{{ asset('assets/img/AdminLTELogo.png') }}"
-            alt="AdminLTE Logo"
-            class="brand-image opacity-75 shadow" /> --}}
-            <!--end::Brand Image-->
             <!--begin::Brand Text-->
             <span class="brand-text fw-light">SDCN</span>
             <!--end::Brand Text-->
@@ -35,7 +29,7 @@
                 </li>
 
                 <li class="nav-header">SISWA</li>
-        
+
                 <li class="nav-item">
                     <a href="{{ route('classrooms.index') }}" class="nav-link {{ request()->routeIs('classrooms.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-building"></i>

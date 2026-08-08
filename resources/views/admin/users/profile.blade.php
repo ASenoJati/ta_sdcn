@@ -24,37 +24,37 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
-       @if(!$user->hasVerifiedEmail())
-<div class="row">
-    <div class="col-12">
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            Alamat email Anda <strong>{{ $user->email }}</strong> belum diverifikasi. 
-            <a href="#" id="resendVerificationLink" class="alert-link">Kirim ulang verifikasi</a>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @if(!$user->hasVerifiedEmail())
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Alamat email Anda <strong>{{ $user->email }}</strong> belum diverifikasi.
+                    <a href="#" id="resendVerificationLink" class="alert-link">Kirim ulang verifikasi</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-@endif
+        @endif
         <div class="row">
             <div class="col-md-4">
                 <!-- Profile Image Card -->
                 <div class="card card-primary card-outline">
                     <div class="card-body box-profile">
-                      <div class="text-center">
-    <img class="profile-user-img img-fluid img-circle"
-         src="{{ $user->avatar ? Storage::url($user->avatar) : asset('assets/img/logo-school.png') }}"
-         alt="User profile picture"
-         id="profileImage"
-         style="width: 150px; height: 150px; object-fit: cover;">
-    <br>
-    <!-- Tombol Hapus Avatar -->
-    @if($user->avatar)
-        <button type="button" class="btn btn-danger btn-sm mt-2 mb-3" id="deleteAvatarBtn">
-            <i class="bi bi-trash"></i> Hapus Foto
-        </button>
-    @endif
-</div>
+                        <div class="text-center">
+                            <img class="profile-user-img img-fluid img-circle"
+                                src="{{ $user->avatar ? Storage::url($user->avatar) : asset('assets/img/logo-school.png') }}"
+                                alt="User profile picture"
+                                id="profileImage"
+                                style="width: 150px; height: 150px; object-fit: cover;">
+                            <br>
+                            <!-- Tombol Hapus Avatar -->
+                            @if($user->avatar)
+                            <button type="button" class="btn btn-danger btn-sm mt-2 mb-3" id="deleteAvatarBtn">
+                                <i class="bi bi-trash"></i> Hapus Foto
+                            </button>
+                            @endif
+                        </div>
 
                         <h3 class="profile-username text-center">{{ $user->name }}</h3>
 
@@ -70,12 +70,12 @@
                                 <b>Member Since</b> <a class="float-end text-decoration-none text-reset">{{ $user->created_at->translatedFormat('d F Y') }}</a>
                             </li>
                             <li class="list-group-item">
-                                <b>Status</b> 
+                                <b>Status</b>
                                 <span class="float-end">
                                     @if($user->email_verified_at)
-                                        <span class="badge bg-success">Verified</span>
+                                    <span class="badge bg-success">Verified</span>
                                     @else
-                                        <span class="badge bg-warning">Unverified</span>
+                                    <span class="badge bg-warning">Unverified</span>
                                     @endif
                                 </span>
                             </li>
@@ -86,7 +86,7 @@
                 <!-- /.card -->
             </div>
             <!-- /.col -->
-            
+
             <div class="col-md-8">
                 <!-- Profile Update Card -->
                 <div class="card card-primary">
@@ -101,20 +101,20 @@
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="name" class="form-label">Nama Lengkap</label>
-                                    <input type="text" class="form-control" id="name" name="name" 
-                                           value="{{ $user->name }}" required>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                        value="{{ $user->name }}" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="email" class="form-label">Alamat Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" 
-                                           value="{{ $user->email }}" required>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        value="{{ $user->email }}" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="avatar" class="form-label">Foto Profil</label>
-                                    <input type="file" class="form-control" id="avatar" name="avatar" 
-                                           accept="image/*">
+                                    <input type="file" class="form-control" id="avatar" name="avatar"
+                                        accept="image/*">
                                     <small class="text-muted">Format: JPG, PNG, GIF. Max: 2MB</small>
                                     <div class="invalid-feedback"></div>
                                 </div>
@@ -127,7 +127,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Change Password Card -->
                 <div class="card card-danger">
                     <div class="card-header">
@@ -141,21 +141,21 @@
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="current_password" class="form-label">Password Saat Ini</label>
-                                    <input type="password" class="form-control" id="current_password" 
-                                           name="current_password" required>
+                                    <input type="password" class="form-control" id="current_password"
+                                        name="current_password" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="new_password" class="form-label">Password Baru</label>
-                                    <input type="password" class="form-control" id="new_password" 
-                                           name="new_password" required>
+                                    <input type="password" class="form-control" id="new_password"
+                                        name="new_password" required>
                                     <div class="invalid-feedback"></div>
                                     <small class="text-muted">Minimal 6 karakter</small>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="confirm_password" class="form-label">Konfirmasi Password Baru</label>
-                                    <input type="password" class="form-control" id="confirm_password" 
-                                           name="confirm_password" required>
+                                    <input type="password" class="form-control" id="confirm_password"
+                                        name="confirm_password" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -186,15 +186,15 @@
         height: 150px;
         object-fit: cover;
     }
-    
+
     .list-group-item {
         padding: 12px 15px;
     }
-    
+
     .card {
         margin-bottom: 20px;
     }
-    
+
     .btn {
         border-radius: 5px;
         padding: 8px 20px;
@@ -205,119 +205,125 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-   function updateProfile() {
-    const formData = new FormData(document.getElementById('profileForm'));
-    
-    Swal.fire({
-        title: 'Menyimpan...',
-        text: 'Mohon tunggu sebentar',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    fetch('{{ route("user.update-profile") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            if (data.requires_verification) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Periksa Email Anda',
-                    text: data.message,
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    location.reload();
-                });
-            }
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: data.message
-            });
-        }
-    })
-    .catch(error => {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'Terjadi kesalahan. Silakan coba lagi.'
-        });
-    });
-}
+    function updateProfile() {
+        const formData = new FormData(document.getElementById('profileForm'));
 
-document.getElementById('resendVerificationLink')?.addEventListener('click', function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Mengirim ulang...',
-        text: 'Mohon tunggu sebentar',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    fetch('{{ route('verification.send') }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json().then(data => ({ status: response.status, body: data })))
-    .then(({ status, body }) => {
-        if (status === 200 && body.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: body.message,
-                timer: 3000,
-                showConfirmButton: false
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: body.message || 'Terjadi kesalahan. Silakan coba lagi.'
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
         Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: 'Terjadi kesalahan jaringan. Silakan coba lagi.'
+            title: 'Menyimpan...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
+
+        fetch('{{ route("user.update-profile") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.requires_verification) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Periksa Email Anda',
+                            text: data.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan. Silakan coba lagi.'
+                });
+            });
+    }
+
+    document.getElementById('resendVerificationLink')?.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Mengirim ulang...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch('{{ route('verification.send') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+            .then(response => response.json().then(data => ({
+                status: response.status,
+                body: data
+            })))
+            .then(({
+                status,
+                body
+            }) => {
+                if (status === 200 && body.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: body.message,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: body.message || 'Terjadi kesalahan. Silakan coba lagi.'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan jaringan. Silakan coba lagi.'
+                });
+            });
     });
-});
-    
+
     // Update password
     function updatePassword() {
         const currentPassword = document.getElementById('current_password').value;
         const newPassword = document.getElementById('new_password').value;
         const confirmPassword = document.getElementById('confirm_password').value;
-        
+
         // Validasi sederhana
         if (!currentPassword || !newPassword || !confirmPassword) {
             Swal.fire({
@@ -327,7 +333,7 @@ document.getElementById('resendVerificationLink')?.addEventListener('click', fun
             });
             return;
         }
-        
+
         if (newPassword !== confirmPassword) {
             Swal.fire({
                 icon: 'error',
@@ -336,7 +342,7 @@ document.getElementById('resendVerificationLink')?.addEventListener('click', fun
             });
             return;
         }
-        
+
         if (newPassword.length < 6) {
             Swal.fire({
                 icon: 'error',
@@ -345,12 +351,12 @@ document.getElementById('resendVerificationLink')?.addEventListener('click', fun
             });
             return;
         }
-        
+
         const formData = new FormData();
         formData.append('current_password', currentPassword);
         formData.append('new_password', newPassword);
         formData.append('confirm_password', confirmPassword);
-        
+
         // Show loading
         Swal.fire({
             title: 'Mengganti Password...',
@@ -360,98 +366,13 @@ document.getElementById('resendVerificationLink')?.addEventListener('click', fun
                 Swal.showLoading();
             }
         });
-        
+
         fetch('{{ route("user.update-password") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    // Clear password fields
-                    document.getElementById('current_password').value = '';
-                    document.getElementById('new_password').value = '';
-                    document.getElementById('confirm_password').value = '';
-                });
-            } else if (data.errors) {
-                let errorMsg = '';
-                for (let key in data.errors) {
-                    errorMsg += data.errors[key][0] + '\n';
-                }
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validasi Gagal!',
-                    text: errorMsg
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: data.message
-                });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Terjadi kesalahan. Silakan coba lagi.'
-            });
-        });
-    }
-    
-    // Preview avatar before upload
-    document.getElementById('avatar')?.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.getElementById('profileImage').src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Hapus Avatar
-document.getElementById('deleteAvatarBtn')?.addEventListener('click', function() {
-    Swal.fire({
-        title: 'Hapus Avatar?',
-        text: "Anda yakin ingin menghapus foto profil?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Tampilkan loading
-            Swal.fire({
-                title: 'Menghapus...',
-                text: 'Mohon tunggu sebentar',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            fetch('{{ route("user.delete-avatar") }}', {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
@@ -463,7 +384,20 @@ document.getElementById('deleteAvatarBtn')?.addEventListener('click', function()
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        location.reload();
+                        // Clear password fields
+                        document.getElementById('current_password').value = '';
+                        document.getElementById('new_password').value = '';
+                        document.getElementById('confirm_password').value = '';
+                    });
+                } else if (data.errors) {
+                    let errorMsg = '';
+                    for (let key in data.errors) {
+                        errorMsg += data.errors[key][0] + '\n';
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal!',
+                        text: errorMsg
                     });
                 } else {
                     Swal.fire({
@@ -480,8 +414,80 @@ document.getElementById('deleteAvatarBtn')?.addEventListener('click', function()
                     text: 'Terjadi kesalahan. Silakan coba lagi.'
                 });
             });
+    }
+
+    // Preview avatar before upload
+    document.getElementById('avatar')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('profileImage').src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         }
     });
-});
+
+    // Hapus Avatar
+    document.getElementById('deleteAvatarBtn')?.addEventListener('click', function() {
+        Swal.fire({
+            title: 'Hapus Avatar?',
+            text: "Anda yakin ingin menghapus foto profil?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Menghapus...',
+                    text: 'Mohon tunggu sebentar',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch('{{ route("user.delete-avatar") }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan. Silakan coba lagi.'
+                        });
+                    });
+            }
+        });
+    });
 </script>
 @endpush
