@@ -243,26 +243,83 @@ $(document).ready(function() {
     let fromDataTable = null;
     let toDataTable = null;
     
-    // Load students when from_classroom changes
+    // ========== EVENT LISTENER UNTUK PERUBAHAN KELAS ==========
     $('#from_classroom_id, #to_classroom_id').on('change', function() {
         loadBothClassrooms();
     });
     
-    // Load both classrooms data
+    // ========== FUNGSI LOAD DATA ==========
     function loadBothClassrooms() {
         const fromClassroomId = $('#from_classroom_id').val();
         const toClassroomId = $('#to_classroom_id').val();
         
+        // Jika kedua kelas kosong, reset tampilan
         if (!fromClassroomId && !toClassroomId) {
             resetAllDisplay();
             return;
         }
         
-        // Update class names
+        // CEK KESAMAAN KELAS
+        if (fromClassroomId && toClassroomId && fromClassroomId === toClassroomId) {
+            $('#to_classroom_id').val('');
+            $('#toClassName').text('-');
+            $('#toStudentsContainer').hide();
+            $('#toEmptyMessage').show();
+            $('#toStudentCount').text('0 Siswa');
+            toStudentsData = [];
+            if (toDataTable) {
+                toDataTable.destroy();
+                toDataTable = null;
+            }
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Kelas Tidak Valid!',
+                text: 'Kelas asal dan kelas tujuan harus berbeda.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+            return;
+        }
+        
+        // Update nama kelas di header
         $('#fromClassName').text(fromClassroomId ? $('#from_classroom_id option:selected').text() : '-');
         $('#toClassName').text(toClassroomId ? $('#to_classroom_id option:selected').text() : '-');
         
-        // Show loading
+        // Jika hanya memilih kelas asal tanpa tujuan, tampilkan siswa asal saja
+        if (fromClassroomId && !toClassroomId) {
+            showLoading();
+            $.ajax({
+                url: "{{ route('move-class.get-students') }}",
+                type: "GET",
+                data: { 
+                    from_classroom_id: fromClassroomId,
+                    to_classroom_id: null 
+                },
+                success: function(response) {
+                    fromStudentsData = response.from_students || [];
+                    renderFromStudentsTable();
+                    $('#fromStudentCount').text(fromStudentsData.length + ' Siswa');
+                    
+                    // Kosongkan kelas tujuan
+                    toStudentsData = [];
+                    $('#toStudentsContainer').hide();
+                    $('#toEmptyMessage').show();
+                    $('#toStudentCount').text('0 Siswa');
+                },
+                error: function(xhr) {
+                    console.error('Error loading students:', xhr);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Gagal memuat data siswa.'
+                    });
+                }
+            });
+            return;
+        }
+        
+        // Jika kedua kelas dipilih, load keduanya
         showLoading();
         
         $.ajax({
@@ -293,6 +350,7 @@ $(document).ready(function() {
         });
     }
     
+    // ========== TAMPILKAN LOADING ==========
     function showLoading() {
         $('#fromStudentsTableBody').html('<tr><td colspan="5" class="text-center"><div class="loading-spinner"></div> Memuat data...</td></tr>');
         $('#toStudentsTableBody').html('<tr><td colspan="4" class="text-center"><div class="loading-spinner"></div> Memuat data...</td></tr>');
@@ -302,6 +360,7 @@ $(document).ready(function() {
         $('#toEmptyMessage').hide();
     }
     
+    // ========== RESET SEMUA ==========
     function resetAllDisplay() {
         fromStudentsData = [];
         toStudentsData = [];
@@ -312,13 +371,26 @@ $(document).ready(function() {
         $('#toEmptyMessage').show();
         $('#fromStudentCount').text('0 Siswa');
         $('#toStudentCount').text('0 Siswa');
+        $('#fromClassName').text('-');
+        $('#toClassName').text('-');
         updateSelectionInfo();
+        
+        // Hancurkan DataTable jika ada
+        if (fromDataTable) {
+            fromDataTable.destroy();
+            fromDataTable = null;
+        }
+        if (toDataTable) {
+            toDataTable.destroy();
+            toDataTable = null;
+        }
     }
     
-    // Render from students table (kelas asal)
+    // ========== RENDER SISWA DARI KELAS ASAL ==========
     function renderFromStudentsTable() {
         if (fromDataTable) {
             fromDataTable.destroy();
+            fromDataTable = null;
         }
         
         const tbody = $('#fromStudentsTableBody');
@@ -346,7 +418,7 @@ $(document).ready(function() {
             tbody.append(row);
         });
         
-        // Initialize DataTable for from students
+        // Inisialisasi DataTable
         fromDataTable = $('#fromStudentsTable').DataTable({
             language: {
                 search: "Cari:",
@@ -370,7 +442,7 @@ $(document).ready(function() {
         });
         
         // Bind checkbox events
-        $('.student-checkbox-from').on('change', function() {
+        $('.student-checkbox-from').off('change').on('change', function() {
             const studentId = parseInt($(this).val());
             const row = $(this).closest('tr');
             
@@ -417,10 +489,11 @@ $(document).ready(function() {
         $('#fromStudentsContainer').show();
     }
     
-    // Render to students table (kelas tujuan)
+    // ========== RENDER SISWA DI KELAS TUJUAN ==========
     function renderToStudentsTable() {
         if (toDataTable) {
             toDataTable.destroy();
+            toDataTable = null;
         }
         
         const tbody = $('#toStudentsTableBody');
@@ -444,7 +517,6 @@ $(document).ready(function() {
             tbody.append(row);
         });
         
-        // Initialize DataTable for to students
         toDataTable = $('#toStudentsTable').DataTable({
             language: {
                 search: "Cari:",
@@ -470,7 +542,7 @@ $(document).ready(function() {
         $('#toStudentsContainer').show();
     }
     
-    // Update selection info
+    // ========== UPDATE SELECTION INFO ==========
     function updateSelectionInfo() {
         const count = selectedStudents.size;
         $('#selectedCount').text(count);
@@ -482,7 +554,7 @@ $(document).ready(function() {
         }
     }
     
-    // Update select all checkboxes
+    // ========== UPDATE SELECT ALL CHECKBOX ==========
     function updateSelectAllCheckboxes() {
         const totalStudents = fromStudentsData.length;
         const selectedCount = selectedStudents.size;
@@ -494,47 +566,62 @@ $(document).ready(function() {
         }
     }
     
-    // Reset form
-    $('#btnReset').on('click', function() {
-        Swal.fire({
-            title: 'Reset Form?',
-            text: 'Semua pilihan akan direset!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Reset!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $('#moveClassForm')[0].reset();
-                $('#from_classroom_id').val('');
-                $('#to_classroom_id').val('');
-                fromStudentsData = [];
-                toStudentsData = [];
-                selectedStudents.clear();
-                $('#fromStudentsContainer').hide();
-                $('#toStudentsContainer').hide();
-                $('#fromEmptyMessage').show();
-                $('#toEmptyMessage').show();
-                $('#fromStudentCount').text('0 Siswa');
-                $('#toStudentCount').text('0 Siswa');
-                $('#fromClassName').text('-');
-                $('#toClassName').text('-');
-                updateSelectionInfo();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Reset Berhasil!',
-                    text: 'Form telah direset.',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+    // ========== EVENT: PROTEKSI KELAS SAMA ==========
+    $('#to_classroom_id').on('change', function() {
+        const fromId = $('#from_classroom_id').val();
+        const toId = $(this).val();
+        
+        if (fromId && toId && fromId === toId) {
+            $(this).val('');
+            $('#toClassName').text('-');
+            $('#toStudentsContainer').hide();
+            $('#toEmptyMessage').show();
+            $('#toStudentCount').text('0 Siswa');
+            toStudentsData = [];
+            if (toDataTable) {
+                toDataTable.destroy();
+                toDataTable = null;
             }
-        });
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Kelas Tidak Valid!',
+                text: 'Kelas asal dan kelas tujuan harus berbeda. Silakan pilih kelas lain.',
+                timer: 3000,
+                showConfirmButton: true,
+                confirmButtonColor: '#d33'
+            });
+        }
     });
     
-    // Submit form
+    $('#from_classroom_id').on('change', function() {
+        const toId = $('#to_classroom_id').val();
+        const fromId = $(this).val();
+        
+        if (toId && fromId && fromId === toId) {
+            $('#to_classroom_id').val('');
+            $('#toClassName').text('-');
+            $('#toStudentsContainer').hide();
+            $('#toEmptyMessage').show();
+            $('#toStudentCount').text('0 Siswa');
+            toStudentsData = [];
+            if (toDataTable) {
+                toDataTable.destroy();
+                toDataTable = null;
+            }
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Kelas Tidak Valid!',
+                text: 'Kelas asal dan kelas tujuan harus berbeda. Silakan pilih kelas lain.',
+                timer: 3000,
+                showConfirmButton: true,
+                confirmButtonColor: '#d33'
+            });
+        }
+    });
+    
+    // ========== SUBMIT FORM ==========
     $('#moveClassForm').on('submit', function(e) {
         e.preventDefault();
         
@@ -544,6 +631,7 @@ $(document).ready(function() {
         const fromClassName = $('#from_classroom_id option:selected').text();
         const toClassName = $('#to_classroom_id option:selected').text();
         
+        // Validasi
         if (!fromClassroomId) {
             Swal.fire({
                 icon: 'error',
@@ -580,6 +668,7 @@ $(document).ready(function() {
             return;
         }
         
+        // Konfirmasi
         Swal.fire({
             title: 'Konfirmasi Pindah Kelas',
             html: `
@@ -603,14 +692,11 @@ $(document).ready(function() {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Show loading
                 Swal.fire({
                     title: 'Memproses...',
                     text: 'Mohon tunggu sebentar',
                     allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    didOpen: () => Swal.showLoading()
                 });
                 
                 $.ajax({
@@ -631,22 +717,7 @@ $(document).ready(function() {
                                 timer: 3000,
                                 showConfirmButton: false
                             }).then(() => {
-                                // Reset form and reload
-                                $('#moveClassForm')[0].reset();
-                                $('#from_classroom_id').val('');
-                                $('#to_classroom_id').val('');
-                                fromStudentsData = [];
-                                toStudentsData = [];
-                                selectedStudents.clear();
-                                $('#fromStudentsContainer').hide();
-                                $('#toStudentsContainer').hide();
-                                $('#fromEmptyMessage').show();
-                                $('#toEmptyMessage').show();
-                                $('#fromStudentCount').text('0 Siswa');
-                                $('#toStudentCount').text('0 Siswa');
-                                $('#fromClassName').text('-');
-                                $('#toClassName').text('-');
-                                updateSelectionInfo();
+                                location.reload();
                             });
                         }
                     },
@@ -668,6 +739,37 @@ $(document).ready(function() {
             }
         });
     });
+    
+    // ========== RESET BUTTON ==========
+    $('#btnReset').on('click', function() {
+        Swal.fire({
+            title: 'Reset Form?',
+            text: 'Semua pilihan akan direset!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Reset!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Reset semua
+                $('#moveClassForm')[0].reset();
+                resetAllDisplay();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reset Berhasil!',
+                    text: 'Form telah direset.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    });
+    
+    // Inisialisasi awal
+    resetAllDisplay();
 });
 </script>
 @endpush
