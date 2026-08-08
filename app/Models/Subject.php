@@ -9,7 +9,7 @@ class Subject extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'academic_year_id'];
+    protected $fillable = ['name'];
 
     protected $casts = [
         'created_at' => 'datetime',
@@ -22,10 +22,5 @@ class Subject extends Model
     public function getCreatedAtFormattedAttribute()
     {
         return $this->created_at->format('d/m/Y H:i');
-    }
-
-    public function academicYear()
-    {
-        return $this->belongsTo(AcademicYear::class);
     }
 }

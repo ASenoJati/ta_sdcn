@@ -13,7 +13,6 @@ use App\Models\TeachingJournal;
 use App\Models\UserAttendance;
 use App\Models\LessonHour;
 use App\Models\AttendanceTimeSetting;
-use App\Models\AcademicYear;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -22,41 +21,39 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil academic_year_id dari request atau session
-        $academicYearId = $request->input('academic_year_id', session('academic_year_id'));
-        if (!$academicYearId) {
-            $active = AcademicYear::active()->first();
-            $academicYearId = $active ? $active->id : null;
-        }
-        session(['academic_year_id' => $academicYearId]);
-
-        // Daftar tahun ajaran untuk filter
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
-
-        // Statistik Utama (dengan filter tahun ajaran)
-        $stats = $this->getStats($academicYearId);
+        // Statistik Utama
+        $stats = [
+            'total_teachers' => User::where('role_id', 2)->count(),
+            'total_students' => Student::count(),
+            'total_classrooms' => Classroom::count(),
+            'total_subjects' => Subject::count(),
+            'total_locations' => Location::count(),
+            'total_lesson_hours' => LessonHour::count(),
+            'total_attendance_settings' => AttendanceTimeSetting::count(),
+            'total_teaching_schedules' => TeachingSchedule::count(),
+        ];
 
         // Statistik Presensi Hari Ini
         $today = Carbon::today();
-        $attendanceStats = $this->getAttendanceStats($today, $academicYearId);
+        $attendanceStats = $this->getAttendanceStats($today);
 
         // Statistik Jurnal Pembelajaran
-        $journalStats = $this->getJournalStats($academicYearId);
+        $journalStats = $this->getJournalStats();
 
         // Data untuk Chart
-        $attendanceChart = $this->getAttendanceChartData($academicYearId);
-        $journalChart = $this->getJournalChartData($academicYearId);
-        $topSubjects = $this->getTopSubjects($academicYearId);
-        $attendanceStatusChart = $this->getAttendanceStatusChart($today, $academicYearId);
+        $attendanceChart = $this->getAttendanceChartData();
+        $journalChart = $this->getJournalChartData();
+        $topSubjects = $this->getTopSubjects();
+        $attendanceStatusChart = $this->getAttendanceStatusChart($today);
 
         // Jadwal Hari Ini
-        $todaySchedules = $this->getTodaySchedules($academicYearId);
+        $todaySchedules = $this->getTodaySchedules();
 
         // Aktivitas Terbaru
-        $recentActivities = $this->getRecentActivities($academicYearId);
+        $recentActivities = $this->getRecentActivities();
 
         // Data untuk Map
-        $attendanceLocations = $this->getAttendanceLocations($academicYearId);
+        $attendanceLocations = $this->getAttendanceLocations();
 
         return view('admin.dashboard.index', compact(
             'stats',
@@ -68,46 +65,13 @@ class DashboardController extends Controller
             'attendanceStatusChart',
             'todaySchedules',
             'recentActivities',
-            'attendanceLocations',
-            'academicYears',
-            'academicYearId'
+            'attendanceLocations'
         ));
     }
 
-    private function getStats($academicYearId)
+    private function getAttendanceStats($today)
     {
-        return [
-            'total_teachers' => User::where('role_id', 2)->count(),
-            'total_students' => Student::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'total_classrooms' => Classroom::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'total_subjects' => Subject::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'total_locations' => Location::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'total_lesson_hours' => LessonHour::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'total_attendance_settings' => AttendanceTimeSetting::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'total_teaching_schedules' => TeachingSchedule::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-        ];
-    }
-
-    private function getAttendanceStats($today, $academicYearId)
-    {
-        $todayAttendance = UserAttendance::whereDate('attendance_date', $today)
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->get();
+        $todayAttendance = UserAttendance::whereDate('attendance_date', $today)->get();
 
         return [
             'checked_in' => $todayAttendance->whereNotNull('check_in_time')->count(),
@@ -117,24 +81,16 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getJournalStats($academicYearId)
+    private function getJournalStats()
     {
         return [
-            'total_journals' => TeachingJournal::when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })->count(),
-            'this_month_journals' => TeachingJournal::whereMonth('created_at', Carbon::now()->month)
-                ->when($academicYearId, function ($query) use ($academicYearId) {
-                    return $query->where('academic_year_id', $academicYearId);
-                })->count(),
-            'this_week_journals' => TeachingJournal::whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
-                ->when($academicYearId, function ($query) use ($academicYearId) {
-                    return $query->where('academic_year_id', $academicYearId);
-                })->count(),
+            'total_journals' => TeachingJournal::count(),
+            'this_month_journals' => TeachingJournal::whereMonth('created_at', Carbon::now()->month)->count(),
+            'this_week_journals' => TeachingJournal::whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count(),
         ];
     }
 
-    private function getAttendanceChartData($academicYearId)
+    private function getAttendanceChartData()
     {
         $labels = [];
         $checkInData = [];
@@ -144,10 +100,7 @@ class DashboardController extends Controller
             $date = Carbon::now()->subDays($i);
             $labels[] = $date->format('d/m');
 
-            $attendance = UserAttendance::whereDate('attendance_date', $date)
-                ->when($academicYearId, function ($query) use ($academicYearId) {
-                    return $query->where('academic_year_id', $academicYearId);
-                });
+            $attendance = UserAttendance::whereDate('attendance_date', $date);
             $checkInData[] = (clone $attendance)->whereNotNull('check_in_time')->count();
             $checkOutData[] = (clone $attendance)->whereNotNull('check_out_time')->count();
         }
@@ -159,7 +112,7 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getJournalChartData($academicYearId)
+    private function getJournalChartData()
     {
         $labels = [];
         $data = [];
@@ -170,9 +123,6 @@ class DashboardController extends Controller
 
             $data[] = TeachingJournal::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
-                ->when($academicYearId, function ($query) use ($academicYearId) {
-                    return $query->where('academic_year_id', $academicYearId);
-                })
                 ->count();
         }
 
@@ -182,41 +132,29 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getTopSubjects($academicYearId)
+    private function getTopSubjects()
     {
         return TeachingSchedule::select('subjects.name', DB::raw('COUNT(*) as total'))
             ->join('subjects', 'teaching_schedules.subject_id', '=', 'subjects.id')
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('teaching_schedules.academic_year_id', $academicYearId);
-            })
             ->groupBy('subjects.id', 'subjects.name')
             ->orderBy('total', 'desc')
             ->limit(5)
             ->get();
     }
 
-    private function getAttendanceStatusChart($today, $academicYearId)
+    private function getAttendanceStatusChart($today)
     {
         $present = UserAttendance::whereDate('attendance_date', $today)
             ->where('check_in_status', 'present')
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })
             ->count();
 
         $late = UserAttendance::whereDate('attendance_date', $today)
             ->where('check_in_status', 'late')
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })
             ->count();
 
         $absent = User::where('role_id', 2)
-            ->whereDoesntHave('attendances', function ($query) use ($today, $academicYearId) {
+            ->whereDoesntHave('attendances', function ($query) use ($today) {
                 $query->whereDate('attendance_date', $today);
-                if ($academicYearId) {
-                    $query->where('academic_year_id', $academicYearId);
-                }
             })
             ->count();
 
@@ -227,15 +165,12 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getTodaySchedules($academicYearId)
+    private function getTodaySchedules()
     {
         $todayName = Carbon::now()->format('l');
 
         return TeachingSchedule::with(['teacher', 'subject', 'classroom', 'lessonHour'])
             ->where('day', $todayName)
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })
             ->orderBy('lesson_hour_id')
             ->limit(10)
             ->get()
@@ -254,13 +189,10 @@ class DashboardController extends Controller
             });
     }
 
-    private function getRecentActivities($academicYearId)
+    private function getRecentActivities()
     {
         // Recent attendances
         $recentAttendances = UserAttendance::with('user')
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })
             ->latest('created_at')
             ->limit(5)
             ->get()
@@ -278,9 +210,6 @@ class DashboardController extends Controller
 
         // Recent journals
         $recentJournals = TeachingJournal::with(['teachingSchedule.subject', 'teachingSchedule.teacher'])
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })
             ->latest('created_at')
             ->limit(5)
             ->get()
@@ -298,10 +227,7 @@ class DashboardController extends Controller
             });
 
         // Recent students
-        $recentStudents = Student::when($academicYearId, function ($query) use ($academicYearId) {
-            return $query->where('academic_year_id', $academicYearId);
-        })
-            ->latest('created_at')
+        $recentStudents = Student::latest('created_at')
             ->limit(5)
             ->get()
             ->map(function ($item) {
@@ -324,7 +250,7 @@ class DashboardController extends Controller
             ->values();
     }
 
-    private function getAttendanceLocations($academicYearId)
+    private function getAttendanceLocations()
     {
         $today = Carbon::today();
 
@@ -332,9 +258,6 @@ class DashboardController extends Controller
             ->whereDate('attendance_date', $today)
             ->whereNotNull('check_in_latitude')
             ->whereNotNull('check_in_longitude')
-            ->when($academicYearId, function ($query) use ($academicYearId) {
-                return $query->where('academic_year_id', $academicYearId);
-            })
             ->get()
             ->map(function ($item) {
                 return [
@@ -350,13 +273,12 @@ class DashboardController extends Controller
 
     public function getChartData(Request $request)
     {
-        $academicYearId = $request->input('academic_year_id', session('academic_year_id'));
         $today = Carbon::today();
 
         return response()->json([
-            'attendanceChart' => $this->getAttendanceChartData($academicYearId),
-            'journalChart' => $this->getJournalChartData($academicYearId),
-            'attendanceStatusChart' => $this->getAttendanceStatusChart($today, $academicYearId),
+            'attendanceChart' => $this->getAttendanceChartData(),
+            'journalChart' => $this->getJournalChartData(),
+            'attendanceStatusChart' => $this->getAttendanceStatusChart($today),
         ]);
     }
 }

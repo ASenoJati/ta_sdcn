@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Imports\StudentsImport;
 use App\Models\Classroom;
 use App\Models\Student;
-use App\Models\AcademicYear; // <-- tambahkan
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\DataTables;
@@ -19,8 +18,7 @@ class ClassroomController extends Controller
 {
     public function index()
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
-        return view('admin.classrooms.index', compact('academicYears'));
+        return view('admin.classrooms.index');
     }
 
     public function showStudents($id)
@@ -129,7 +127,6 @@ class ClassroomController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:classrooms,name',
                 'description' => 'nullable|string',
-                'academic_year_id' => 'required|exists:academic_years,id',
             ]);
 
             if ($validator->fails()) {
@@ -165,7 +162,6 @@ class ClassroomController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:classrooms,name,' . $id,
                 'description' => 'nullable|string',
-                'academic_year_id' => 'required|exists:academic_years,id',
             ]);
 
             if ($validator->fails()) {

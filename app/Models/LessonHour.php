@@ -13,17 +13,11 @@ class LessonHour extends Model
     protected $fillable = [
         'session',
         'start_time',
-        'end_time',
-        'academic_year_id'
+        'end_time'
     ];
 
     public function teachingSchedules(): HasMany
     {
         return $this->hasMany(TeachingSchedule::class);
-    }
-
-    public function academicYear()
-    {
-        return $this->belongsTo(AcademicYear::class);
     }
 }
