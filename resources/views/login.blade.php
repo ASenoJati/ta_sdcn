@@ -33,9 +33,7 @@
                             <span class="bi bi-envelope"></span>
                         </div>
                     </div>
-                    @error('email')
-                        <div class="text-danger mb-2 small">{{ $message }}</div>
-                    @enderror
+                   
                     
                     <div class="input-group mb-3">
                         <input type="password" name="password" id="password" 
@@ -45,9 +43,13 @@
                             <span class="bi bi-lock-fill"></span>
                         </div>
                     </div>
-                    @error('password')
+                     @error('email')
                         <div class="text-danger mb-2 small">{{ $message }}</div>
                     @enderror
+
+                    {{-- @error('password')
+                        <div class="text-danger mb-2 small">{{ $message }}</div>
+                    @enderror --}}
                     
                     <div class="row">
                         <div class="col-8">
@@ -71,7 +73,7 @@
                 <div class="social-auth-links text-center mb-3 d-grid gap-2 mt-4">
                     <p class="mb-2 text-muted">- ATAU -</p>
                     <a href="{{ route('login.google') }}" class="btn btn-danger" id="googleLoginBtn">
-                        <i class="bi bi-google me-2"></i> Sign in using Google+
+                        <i class="bi bi-google me-2"></i> Sign in using Google
                     </a>
                 </div>
 
@@ -218,7 +220,7 @@
         
         if (loginForm) {
             loginForm.addEventListener('submit', function() {
-                btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Memproses...';
+                btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>';
                 btnLogin.classList.add('btn-loading');
             });
         }
