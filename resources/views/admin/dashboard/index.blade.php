@@ -25,57 +25,6 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
-        <!-- Filter Tahun Ajaran -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="card card-outline card-primary">
-                    <div class="card-body py-2">
-                        <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-center">
-                            <div class="col-auto">
-                                <label for="academic_year_filter" class="col-form-label fw-bold">
-                                    <i class="bi bi-calendar-range me-1"></i> Tahun Ajaran:
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <select name="academic_year_id" id="academic_year_filter" class="form-select" onchange="this.form.submit()">
-                                    <option value="">-- Semua --</option>
-                                    @foreach($academicYears as $year)
-                                    <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
-                                        {{ $year->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-auto">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-funnel me-1"></i> Filter
-                                </button>
-                            </div>
-                            @if(request('academic_year_id'))
-                            <div class="col-auto">
-                                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle me-1"></i> Reset
-                                </a>
-                            </div>
-                            @endif
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                @if($academicYearId)
-                @php $selected = $academicYears->firstWhere('id', $academicYearId); @endphp
-                <span class="badge bg-info fs-6 p-2">
-                    <i class="bi bi-calendar-check me-1"></i>
-                    {{ $selected ? $selected->name : 'Semua' }}
-                </span>
-                @else
-                <span class="badge bg-secondary fs-6 p-2">
-                    <i class="bi bi-calendar me-1"></i> Semua Tahun
-                </span>
-                @endif
-            </div>
-        </div>
         <!-- Info Boxes -->
         <div class="row">
             <div class="col-lg-3 col-6">

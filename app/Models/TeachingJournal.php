@@ -15,8 +15,7 @@ class TeachingJournal extends Model
         'teaching_schedule_id',
         'date',
         'material',
-        'reflection',
-        'academic_year_id'
+        'reflection'
     ];
 
     protected $casts = [
@@ -80,11 +79,6 @@ class TeachingJournal extends Model
             'alpa'  => $attendances->where('status', 'alpa')->count(),
             'total' => $attendances->count()
         ];
-    }
-
-    public function academicYear()
-    {
-        return $this->belongsTo(AcademicYear::class);
     }
 
     public function materials()

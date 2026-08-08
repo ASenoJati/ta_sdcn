@@ -139,9 +139,4 @@ class UserAttendance extends Model
         $diff = $this->check_in_time->diff($this->check_out_time);
         return sprintf('%d jam %d menit', $diff->h, $diff->i);
     }
-
-    public function academicYear()
-    {
-        return $this->belongsTo(AcademicYear::class);
-    }
 }
