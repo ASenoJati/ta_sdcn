@@ -14,26 +14,17 @@ use Illuminate\Support\Facades\Validator;
 
 class TeachingScheduleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return view('admin.teaching-schedules.index');
     }
 
-    /**
-     * Display schedule by classroom.
-     */
     public function showByClassroom($id)
     {
         $classroom = Classroom::findOrFail($id);
         return view('admin.teaching-schedules.by-classroom', compact('classroom'));
     }
 
-    /**
-     * Get schedule data for specific classroom.
-     */
     public function getScheduleByClassroom(Request $request, $id)
     {
         try {
@@ -86,9 +77,6 @@ class TeachingScheduleController extends Controller
         }
     }
 
-    /**
-     * Get data for DataTables (all schedules).
-     */
     public function getData(Request $request)
     {
         try {
@@ -346,31 +334,18 @@ class TeachingScheduleController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         $schedule = TeachingSchedule::findOrFail($id);
         return response()->json($schedule);
     }
 
-    /**
-     * Get teachers list (users with role_id = 2)
-     */
     public function getTeachers()
     {
-        $teachers = User::where('role_id', 2)
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
-
+        $teachers = User::where('role_id', 2)->select('id', 'name')->orderBy('name')->get();
         return response()->json($teachers);
     }
 
-    /**
-     * Get lesson hours list
-     */
     public function getLessonHours()
     {
         $lessonHours = LessonHour::select('id', 'session', 'start_time', 'end_time')

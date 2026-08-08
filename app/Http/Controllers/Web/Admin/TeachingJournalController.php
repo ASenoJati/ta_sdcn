@@ -28,10 +28,17 @@ class TeachingJournalController extends Controller
                 ->addIndexColumn()
                 ->addColumn('schedule_info', function ($row) {
                     $schedule = $row->teachingSchedule;
+                    // Jika schedule null, tampilkan pesan error
+                    if (!$schedule) {
+                        return '<div><span class="text-danger">Jadwal tidak ditemukan</span></div>';
+                    }
+                    $subjectName = $schedule->subject ? $schedule->subject->name : '-';
+                    $className = $schedule->classroom ? $schedule->classroom->name : '-';
+                    $teacherName = $schedule->teacher ? $schedule->teacher->name : '-';
                     return '<div>
-                        <strong>' . $schedule->subject->name . '</strong><br>
-                        <small>Kelas: ' . $schedule->classroom->name . '</small><br>
-                        <small>Guru: ' . ($schedule->teacher ? $schedule->teacher->name : '-') . '</small>
+                        <strong>' . $subjectName . '</strong><br>
+                        <small>Kelas: ' . $className . '</small><br>
+                        <small>Guru: ' . $teacherName . '</small>
                     </div>';
                 })
                 ->addColumn('date_info', function ($row) {
@@ -88,6 +95,12 @@ class TeachingJournalController extends Controller
             'attendances.student',
             'materials.students',
         ])->findOrFail($id);
+
+        // Jika teachingSchedule null, redirect dengan pesan error
+        if (!$journal->teachingSchedule) {
+            return redirect()->route('teaching-journals.index')
+                ->with('error', 'Jurnal ini tidak memiliki jadwal yang valid. Mungkin jadwal telah dihapus.');
+        }
 
         // Ambil semua siswa di kelas yang sama
         $classroomStudents = Student::where('classroom_id', $journal->teachingSchedule->classroom_id)
@@ -189,8 +202,8 @@ class TeachingJournalController extends Controller
 
             // Hapus semua materi dan file terkait
             foreach ($journal->materials as $material) {
-                if ($material->type === 'file' && $material->path) {
-                    Storage::disk('public')->delete($material->path);
+                if ($material->type === 'file' && $material->file_path) {
+                    Storage::disk('public')->delete($material->file_path);
                 }
                 $material->students()->detach();
                 $material->delete();

@@ -357,11 +357,7 @@
             const day = $('#day').val();
             const lessonHourId = $('#lesson_hour_id').val();
             const scheduleId = $('#schedule_id').val();
-            const classroomId = {
-                {
-                    $classroom - > id
-                }
-            };
+            const classroomId = '{{ $classroom->id }}'; // Fix: use string from PHP
 
             // Reset conflict status
             hasClassroomConflict = false;
@@ -485,11 +481,7 @@
             const formData = {
                 user_id: userId,
                 subject_id: subjectId,
-                classroom_id: {
-                    {
-                        $classroom - > id
-                    }
-                },
+                classroom_id: '{{ $classroom->id }}',
                 lesson_hour_id: lessonHourId,
                 day: day,
                 _token: $('meta[name="csrf-token"]').attr('content')

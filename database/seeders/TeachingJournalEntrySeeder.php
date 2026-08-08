@@ -9,14 +9,10 @@ use Faker\Factory as Faker;
 
 class TeachingJournalEntrySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $faker = Faker::create('id_ID');
 
-        // Ambil semua ID teaching_schedule yang tersedia
         $scheduleIds = TeachingSchedule::pluck('id')->toArray();
 
         if (empty($scheduleIds)) {
@@ -24,16 +20,25 @@ class TeachingJournalEntrySeeder extends Seeder
             return;
         }
 
-        // Jumlah jurnal yang akan dibuat (misal 30)
         $jumlahJurnal = 30;
 
         for ($i = 0; $i < $jumlahJurnal; $i++) {
-            TeachingJournal::create([
-                'teaching_schedule_id' => $scheduleIds[array_rand($scheduleIds)],
-                'date'                 => $faker->dateTimeBetween('-3 months', 'now')->format('Y-m-d'),
-                'material'             => 'Materi: ' . $faker->sentence(6),
-                'reflection'           => $faker->optional(0.7)->paragraph(2),
-            ]);
+            $scheduleId = $scheduleIds[array_rand($scheduleIds)];
+            $date = $faker->dateTimeBetween('-3 months', 'now')->format('Y-m-d');
+
+            // Cegah duplikasi (opsional)
+            $exists = TeachingJournal::where('teaching_schedule_id', $scheduleId)
+                ->whereDate('date', $date)
+                ->exists();
+
+            if (!$exists) {
+                TeachingJournal::create([
+                    'teaching_schedule_id' => $scheduleId,
+                    'date'                 => $date,
+                    'material'             => 'Materi: ' . $faker->sentence(6),
+                    'reflection'           => $faker->optional(0.7)->paragraph(2),
+                ]);
+            }
         }
 
         $this->command->info("Berhasil menambahkan {$jumlahJurnal} jurnal mengajar.");
