@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TeachingJournal;
 use App\Models\JournalMaterial;
 use App\Models\Student;
+use App\Models\StudentAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -28,7 +29,6 @@ class TeachingJournalController extends Controller
                 ->addIndexColumn()
                 ->addColumn('schedule_info', function ($row) {
                     $schedule = $row->teachingSchedule;
-                    // Jika schedule null, tampilkan pesan error
                     if (!$schedule) {
                         return '<div><span class="text-danger">Jadwal tidak ditemukan</span></div>';
                     }
@@ -96,33 +96,128 @@ class TeachingJournalController extends Controller
             'materials.students',
         ])->findOrFail($id);
 
-        // Jika teachingSchedule null, redirect dengan pesan error
         if (!$journal->teachingSchedule) {
             return redirect()->route('teaching-journals.index')
                 ->with('error', 'Jurnal ini tidak memiliki jadwal yang valid. Mungkin jadwal telah dihapus.');
         }
 
-        // Ambil semua siswa di kelas yang sama
         $classroomStudents = Student::where('classroom_id', $journal->teachingSchedule->classroom_id)
             ->orderBy('name')
             ->get();
 
-        // 🔥 FILTER: Hanya tampilkan siswa yang tidak hadir (izin, sakit, alpa)
+        // Filter: Hanya siswa yang tidak hadir (izin, sakit, alpa)
         $filteredAttendances = $journal->attendances->filter(function ($attendance) {
             return in_array($attendance->status, ['izin', 'sakit', 'alpa']);
         });
 
-        // Kirim filtered attendances ke view
         return view('admin.teaching-journals.show', compact('journal', 'classroomStudents', 'filteredAttendances'));
     }
 
-    // Method untuk menyimpan materi (via AJAX)
+    /**
+     * Menambahkan siswa tidak hadir (izin, sakit, alpa) ke jurnal
+     */
+    public function addAbsentStudent(Request $request, $journalId)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required|in:izin,sakit,alpa',
+        ]);
+
+        $journal = TeachingJournal::findOrFail($journalId);
+
+        // Cek apakah siswa sudah ada di jurnal ini
+        $existing = StudentAttendance::where('teaching_journal_id', $journal->id)
+            ->where('student_id', $request->student_id)
+            ->first();
+
+        if ($existing) {
+            // Jika sudah ada, update statusnya
+            $existing->update(['status' => $request->status]);
+            $message = 'Status siswa berhasil diperbarui menjadi ' . $request->status;
+        } else {
+            // Tambah baru
+            StudentAttendance::create([
+                'teaching_journal_id' => $journal->id,
+                'student_id' => $request->student_id,
+                'status' => $request->status,
+            ]);
+            $message = 'Siswa berhasil ditambahkan sebagai ' . $request->status;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+        ]);
+    }
+
+    // ========== METHOD UNTUK EDIT MATERI & REFLEKSI ==========
+    public function updateMaterial(Request $request, $id)
+    {
+        $request->validate([
+            'material' => 'required|string',
+        ]);
+
+        $journal = TeachingJournal::findOrFail($id);
+        $journal->update(['material' => $request->material]);
+
+        return redirect()->back()->with('success', 'Materi berhasil diperbarui!');
+    }
+
+    public function updateReflection(Request $request, $id)
+    {
+        $request->validate([
+            'reflection' => 'required|string|min:5',
+        ]);
+
+        $journal = TeachingJournal::findOrFail($id);
+        $journal->update(['reflection' => $request->reflection]);
+
+        return redirect()->back()->with('success', 'Refleksi berhasil diperbarui!');
+    }
+
+    // ========== METHOD UNTUK EDIT PRESENSI SISWA ==========
+    public function updateAttendanceStatus(Request $request)
+    {
+        $request->validate([
+            'attendance_id' => 'required|exists:student_attendances,id',
+            'status' => 'required|in:hadir,izin,sakit,alpa',
+        ]);
+
+        $attendance = StudentAttendance::findOrFail($request->attendance_id);
+        $attendance->update(['status' => $request->status]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status presensi berhasil diperbarui!',
+            'new_status' => $request->status,
+            'new_badge' => $this->getStatusBadge($request->status),
+        ]);
+    }
+
+    private function getStatusBadge($status)
+    {
+        $statusMap = [
+            'hadir' => 'success',
+            'izin' => 'warning',
+            'sakit' => 'info',
+            'alpa' => 'danger'
+        ];
+        $labelMap = [
+            'hadir' => 'Hadir',
+            'izin' => 'Izin',
+            'sakit' => 'Sakit',
+            'alpa' => 'Alpa'
+        ];
+        return '<span class="badge bg-' . ($statusMap[$status] ?? 'secondary') . '">' . ($labelMap[$status] ?? $status) . '</span>';
+    }
+
+    // ========== METHOD UNTUK MATERI ==========
     public function storeMaterial(Request $request, $journalId)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:file,link',
-            'file' => 'required_if:type,file|file|max:10240', // 10MB
+            'file' => 'required_if:type,file|file|max:10240',
             'url' => 'required_if:type,link|url|max:500',
             'description' => 'nullable|string',
             'student_option' => 'required|in:all,selected',
@@ -148,7 +243,6 @@ class TeachingJournalController extends Controller
 
         $material = JournalMaterial::create($data);
 
-        // Jika pilih siswa tertentu
         if ($request->student_option === 'selected' && $request->has('student_ids')) {
             $material->students()->attach($request->student_ids);
         }
@@ -159,23 +253,16 @@ class TeachingJournalController extends Controller
     public function destroyMaterial($journalId, $materialId)
     {
         try {
-            // Cari jurnal
             $journal = TeachingJournal::findOrFail($journalId);
-
-            // Cari materi dan pastikan milik jurnal ini
             $material = JournalMaterial::where('id', $materialId)
                 ->where('teaching_journal_id', $journalId)
                 ->firstOrFail();
 
-            // Hapus file jika ada
             if ($material->type === 'file' && $material->file_path) {
                 Storage::disk('public')->delete($material->file_path);
             }
 
-            // Detach relasi siswa
             $material->students()->detach();
-
-            // Hapus materi
             $material->delete();
 
             return redirect()->back()->with('success', 'Materi berhasil dihapus!');
@@ -206,7 +293,6 @@ class TeachingJournalController extends Controller
         try {
             $journal = TeachingJournal::findOrFail($id);
 
-            // Hapus semua materi dan file terkait
             foreach ($journal->materials as $material) {
                 if ($material->type === 'file' && $material->file_path) {
                     Storage::disk('public')->delete($material->file_path);
