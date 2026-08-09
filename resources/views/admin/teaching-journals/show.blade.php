@@ -63,14 +63,24 @@
                                     @endif
                                 </td>
                             </tr>
-                            <tr>
-                                <th>Materi</th>
-                                <td>{{ $journal->material ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Refleksi</th>
-                                <td>{{ $journal->reflection ?? '-' }}</td>
-                            </tr>
+                          <tr>
+    <th>Materi</th>
+    <td>
+        {{ $journal->material ?? '-' }}
+        <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalEditMaterial">
+            <i class="bi bi-pencil"></i> Edit
+        </button>
+    </td>
+</tr>
+<tr>
+    <th>Refleksi</th>
+    <td>
+        {{ $journal->reflection ?? '-' }}
+        <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalEditReflection">
+            <i class="bi bi-pencil"></i> Edit
+        </button>
+    </td>
+</tr>
                             <tr>
                                 <th>Dibuat</th>
                                 <td>{{ $journal->created_at->translatedFormat('d F Y H:i') }}</td>
@@ -246,12 +256,17 @@
 <div class="row">
     <div class="col-12 mt-4">
         <div class="card card-info">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="bi bi-people me-2"></i> Daftar Siswa Tidak Hadir
-                    <span class="badge bg-warning ms-2">{{ $filteredAttendances->count() }} Siswa</span>
-                </h3>
-            </div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">
+        <i class="bi bi-people me-2"></i> Daftar Siswa Tidak Hadir
+        <span class="badge bg-warning ms-2">{{ $filteredAttendances->count() }} Siswa</span>
+    </h3>
+    <div>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddAbsent">
+            <i class="bi bi-plus-circle"></i> Tambah Siswa Tidak Hadir
+        </button>
+    </div>
+</div>
             <div class="card-body">
                 @if($filteredAttendances->count() > 0)
                 <div class="table-responsive">
@@ -263,6 +278,7 @@
                                 <th>Nama Siswa</th>
                                 <th>Status</th>
                                 <th>Waktu Presensi</th>
+                                <th width="15%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -272,23 +288,16 @@
                                 <td>{{ $attendance->student->nis ?? '-' }}</td>
                                 <td>{{ $attendance->student->name ?? '-' }}</td>
                                 <td>
-                                    @php
-                                    $statusMap = [
-                                    'izin' => 'warning',
-                                    'sakit' => 'info',
-                                    'alpa' => 'danger'
-                                    ];
-                                    $labelMap = [
-                                    'izin' => 'Izin',
-                                    'sakit' => 'Sakit',
-                                    'alpa' => 'Alpa'
-                                    ];
-                                    @endphp
-                                    <span class="badge bg-{{ $statusMap[$attendance->status] ?? 'secondary' }}">
-                                        {{ $labelMap[$attendance->status] ?? $attendance->status }}
+                                    <span class="badge bg-{{ $attendance->status === 'izin' ? 'warning' : ($attendance->status === 'sakit' ? 'info' : 'danger') }}">
+                                        {{ $attendance->status === 'izin' ? 'Izin' : ($attendance->status === 'sakit' ? 'Sakit' : 'Alpa') }}
                                     </span>
                                 </td>
                                 <td>{{ $attendance->created_at ? $attendance->created_at->translatedFormat('d F Y H:i') : '-' }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="editAttendance({{ $attendance->id }}, '{{ $attendance->status }}', '{{ $attendance->student->name ?? '-' }}')">
+                                        <i class="bi bi-pencil"></i> Ubah Status
+                                    </button>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -307,6 +316,137 @@
     </div>
 </div>
 <!--end::App Content-->
+
+<!-- Modal Tambah Siswa Tidak Hadir -->
+<div class="modal fade" id="modalAddAbsent" tabindex="-1" aria-labelledby="modalAddAbsentLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalAddAbsentLabel">
+                    <i class="bi bi-person-plus me-2"></i> Tambah Siswa Tidak Hadir
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addAbsentForm">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="student_id" class="form-label">Pilih Siswa <span class="text-danger">*</span></label>
+                        <select class="form-select" id="student_id" name="student_id" required>
+                            <option value="">-- Pilih Siswa --</option>
+                            @foreach($classroomStudents as $student)
+                                <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->nis }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status <span class="text-danger">*</span></label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusIzin" value="izin" checked>
+                            <label class="form-check-label" for="statusIzin">Izin</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusSakit" value="sakit">
+                            <label class="form-check-label" for="statusSakit">Sakit</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusAlpa" value="alpa">
+                            <label class="form-check-label" for="statusAlpa">Alpa</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Status Presensi -->
+<div class="modal fade" id="modalEditAttendance" tabindex="-1" aria-labelledby="modalEditAttendanceLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalEditAttendanceLabel">Ubah Status Presensi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editAttendanceForm">
+                @csrf
+                <input type="hidden" id="attendance_id" name="attendance_id">
+                <div class="modal-body">
+                    <p>Ubah status presensi untuk siswa: <strong id="attendance_student_name"></strong></p>
+                    <div class="mb-3">
+                        <label for="attendance_status" class="form-label">Status Presensi</label>
+                        <select class="form-select" id="attendance_status" name="status">
+                            <option value="hadir">Hadir</option>
+                            <option value="izin">Izin</option>
+                            <option value="sakit">Sakit</option>
+                            <option value="alpa">Alpa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Materi -->
+<div class="modal fade" id="modalEditMaterial" tabindex="-1" aria-labelledby="modalEditMaterialLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalEditMaterialLabel">Edit Materi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('teaching-journals.update-material', $journal->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_material" class="form-label">Materi Pembelajaran</label>
+                        <textarea class="form-control" id="edit_material" name="material" rows="4" required>{{ $journal->material }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Refleksi -->
+<div class="modal fade" id="modalEditReflection" tabindex="-1" aria-labelledby="modalEditReflectionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalEditReflectionLabel">Edit Refleksi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('teaching-journals.update-reflection', $journal->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_reflection" class="form-label">Refleksi Pembelajaran</label>
+                        <textarea class="form-control" id="edit_reflection" name="reflection" rows="4" required>{{ $journal->reflection }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Modal Tambah Materi -->
 <div class="modal fade" id="modalMaterial" tabindex="-1" aria-labelledby="modalMaterialLabel" aria-hidden="true">
@@ -439,6 +579,116 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Handle form tambah siswa tidak hadir
+$('#addAbsentForm').on('submit', function(e) {
+    e.preventDefault();
+    const studentId = $('#student_id').val();
+    const status = $('input[name="status"]:checked').val();
+
+    if (!studentId || !status) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal!',
+            text: 'Silakan pilih siswa dan status.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Menyimpan...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const journalId = {{ $journal->id }};
+    const url = '{{ url("admin/teaching-journals") }}/' + journalId + '/add-absent-student';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            student_id: studentId,
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#modalAddAbsent').modal('hide');
+            $('#addAbsentForm')[0].reset();
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: data.message,
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => location.reload());
+        } else {
+            Swal.fire({ icon: 'error', title: 'Gagal!', text: data.message });
+        }
+    })
+    .catch(error => {
+        Swal.fire({ icon: 'error', title: 'Error!', text: 'Terjadi kesalahan. Silakan coba lagi.' });
+    });
+});
+
+    // ========== EDIT PRESENSI SISWA ==========
+function editAttendance(id, status, name) {
+    $('#attendance_id').val(id);
+    $('#attendance_student_name').text(name);
+    $('#attendance_status').val(status);
+    $('#modalEditAttendance').modal('show');
+}
+
+$('#editAttendanceForm').on('submit', function(e) {
+    e.preventDefault();
+    const attendanceId = $('#attendance_id').val();
+    const status = $('#attendance_status').val();
+    
+    Swal.fire({
+        title: 'Menyimpan...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    $.ajax({
+        url: "{{ route('teaching-journals.update-attendance') }}",
+        type: "POST",
+        data: {
+            _token: '{{ csrf_token() }}',
+            attendance_id: attendanceId,
+            status: status
+        },
+        success: function(response) {
+            if (response.success) {
+                $('#modalEditAttendance').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        },
+        error: function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Terjadi kesalahan. Silakan coba lagi.'
+            });
+        }
+    });
+});
+
     // Konfirmasi hapus jurnal
     function confirmDelete(id) {
         Swal.fire({

@@ -166,6 +166,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teaching-journals/{id}/students-list', [TeachingJournalController::class, 'getStudentsList'])->name('teaching-journals.students-list');
         Route::get('/teaching-journals/materials/{material}/students', [TeachingJournalController::class, 'getMaterialStudents'])
             ->name('teaching-journals.materials.students');
+        // Update Materi & Refleksi
+        Route::put('/teaching-journals/{id}/material', [TeachingJournalController::class, 'updateMaterial'])->name('teaching-journals.update-material');
+        Route::put('/teaching-journals/{id}/reflection', [TeachingJournalController::class, 'updateReflection'])->name('teaching-journals.update-reflection');
+
+        // Update Attendance Status (AJAX)
+        Route::post('/teaching-journals/attendance/update', [TeachingJournalController::class, 'updateAttendanceStatus'])->name('teaching-journals.update-attendance');
+        Route::post('/teaching-journals/{journal}/add-absent-student', [TeachingJournalController::class, 'addAbsentStudent'])
+            ->name('teaching-journals.add-absent-student');
     });
 
     // Route Khusus Teacher
