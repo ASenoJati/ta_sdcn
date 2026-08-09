@@ -68,6 +68,12 @@
                         <p>Jurnal Mengajar</p>
                     </a>
                 </li>
+                <li class="nav-item">
+    <a href="{{ route('attendance-report.index') }}" class="nav-link {{ request()->routeIs('attendance-report.*') ? 'active' : '' }}">
+        <i class="nav-icon bi bi-bar-chart"></i>
+        <p>Rekap Presensi</p>
+    </a>
+</li>
 
 
                 <li class="nav-header">PRESENSI GURU</li>
