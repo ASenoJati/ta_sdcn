@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Admin\LessonHourController;
 use App\Http\Controllers\Web\Admin\LocationsController;
 use App\Http\Controllers\Web\Admin\MoveClassController;
 use App\Http\Controllers\Web\Admin\RoleAttendanceTimeController;
+use App\Http\Controllers\Web\Admin\StudentAttendanceReportController;
 use App\Http\Controllers\Web\Admin\StudentsController;
 use App\Http\Controllers\Web\Admin\SubjectController;
 use App\Http\Controllers\Web\Admin\TeachingJournalController;
@@ -174,6 +175,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/teaching-journals/attendance/update', [TeachingJournalController::class, 'updateAttendanceStatus'])->name('teaching-journals.update-attendance');
         Route::post('/teaching-journals/{journal}/add-absent-student', [TeachingJournalController::class, 'addAbsentStudent'])
             ->name('teaching-journals.add-absent-student');
+
+        Route::get('/attendance-report', [StudentAttendanceReportController::class, 'index'])->name('attendance-report.index');
+        Route::get('/attendance-report/detail', [StudentAttendanceReportController::class, 'getStudentDetail'])->name('attendance-report.detail');
     });
 
     // Route Khusus Teacher
