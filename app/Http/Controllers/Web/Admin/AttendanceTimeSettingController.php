@@ -30,11 +30,17 @@ class AttendanceTimeSettingController extends Controller
             return DataTables::of($settings)
                 ->addIndexColumn()
                 ->addColumn('check_in_range', function ($row) {
-                    return '<span class="badge bg-info">' . $row->check_in_start . '</span> - <span class="badge bg-success">' . $row->check_in_end . '</span>';
+                    $start = $row->check_in_start ? date('H:i:s', strtotime($row->check_in_start)) : '-';
+                    $end   = $row->check_in_end ? date('H:i:s', strtotime($row->check_in_end)) : '-';
+
+                    return '<span class="badge bg-info">' . $start . '</span> - <span class="badge bg-success">' . $end . '</span>';
                 })
                 ->addColumn('check_out_range', function ($row) {
                     if ($row->check_out_start && $row->check_out_end) {
-                        return '<span class="badge bg-warning">' . $row->check_out_start . '</span> - <span class="badge bg-danger">' . $row->check_out_end . '</span>';
+                        $start = date('H:i:s', strtotime($row->check_out_start));
+                        $end   = date('H:i:s', strtotime($row->check_out_end));
+
+                        return '<span class="badge bg-warning">' . $start . '</span> - <span class="badge bg-danger">' . $end . '</span>';
                     }
                     return '<span class="badge bg-secondary">Tidak Diatur</span>';
                 })
