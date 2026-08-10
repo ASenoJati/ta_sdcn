@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Jam Pembelajaran')
 
 @section('content')
-<!--begin::App Content Header-->
+<!-- Content Header -->
 <div class="app-content-header">
     <div class="container-fluid">
         <div class="row">
@@ -13,15 +13,13 @@
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-end">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Jam Pembelajaran</li>
+                    <li class="breadcrumb-item active">Jam Pembelajaran</li>
                 </ol>
             </div>
         </div>
     </div>
 </div>
-<!--end::App Content Header-->
 
-<!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
         <div class="row">
@@ -48,9 +46,7 @@
                                         <th width="10%">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- Data akan diisi oleh DataTables via AJAX -->
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -59,9 +55,8 @@
         </div>
     </div>
 </div>
-<!--end::App Content-->
 
-<!-- Modal Form Lesson Hour -->
+<!-- Modal Form -->
 <div class="modal fade" id="modalLessonHour" tabindex="-1" aria-labelledby="modalLessonHourLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -83,11 +78,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="start_time" class="form-label">Waktu Mulai <span class="text-danger">*</span></label>
+                            <!-- 🔥 PASTIKAN TYPE TIME -->
                             <input type="time" class="form-control" id="start_time" name="start_time" required>
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="end_time" class="form-label">Waktu Selesai <span class="text-danger">*</span></label>
+                            <!-- 🔥 PASTIKAN TYPE TIME -->
                             <input type="time" class="form-control" id="end_time" name="end_time" required>
                             <div class="invalid-feedback"></div>
                             <small class="text-muted">Harus setelah waktu mulai</small>
@@ -99,7 +96,7 @@
                         <strong>Informasi:</strong>
                         <ul class="mb-0 mt-2">
                             <li>Setiap sesi/jam harus memiliki nomor yang unik</li>
-                            <li>Kombinasi waktu mulai dan selesai harus unik (tidak boleh sama dengan data lain)</li>
+                            <li>Kombinasi waktu mulai dan selesai harus unik</li>
                             <li>Waktu selesai harus lebih besar dari waktu mulai</li>
                         </ul>
                     </div>
@@ -141,50 +138,53 @@
 @endsection
 
 @push('styles')
-<!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
 @endpush
 
 @push('scripts')
-<!-- jQuery first -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 $(document).ready(function() {
-    console.log('Document ready, initializing DataTable...');
-    
-    // Inisialisasi DataTable
+    // ===== FUNGSI MEMBANDINGKAN WAKTU =====
+    function compareTimes(time1, time2) {
+        if (!time1 || !time2) return 0;
+        const [h1, m1] = time1.split(':').map(Number);
+        const [h2, m2] = time2.split(':').map(Number);
+        return (h2 * 60 + m2) - (h1 * 60 + m1);
+    }
+
+    // ===== PREVIEW DURASI =====
+    function previewDuration() {
+        const start = $('#start_time').val();
+        const end = $('#end_time').val();
+        if (start && end) {
+            const diff = compareTimes(start, end);
+            if (diff > 0) {
+                const hours = Math.floor(diff / 60);
+                const minutes = diff % 60;
+                let text = hours + ' jam';
+                if (minutes > 0) text += ' ' + minutes + ' menit';
+                $('#previewDuration').text(text);
+                $('#durationPreview').show();
+            } else {
+                $('#durationPreview').hide();
+            }
+        } else {
+            $('#durationPreview').hide();
+        }
+    }
+
+    $('#start_time, #end_time').on('change input', previewDuration);
+
+    // ===== DATA TABLES =====
     const table = $('#lessonHourTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: {
-            url: "{{ route('lesson-hours.data') }}",
-            type: "GET",
-            error: function(xhr, error, thrown) {
-                console.error('DataTable AJAX Error:', xhr);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Gagal memuat data. Silakan refresh halaman.',
-                    timer: 3000
-                });
-            }
-        },
+        ajax: "{{ route('lesson-hours.data') }}",
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'session_formatted', name: 'session' },
@@ -194,169 +194,76 @@ $(document).ready(function() {
             { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
         ],
         language: {
-            processing: "<div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading...</span></div>",
+            processing: "<div class='spinner-border text-primary' role='status'></div>",
             search: "Cari:",
             lengthMenu: "Tampilkan _MENU_ data",
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
-            infoFiltered: "(disaring dari _MAX_ data keseluruhan)",
-            loadingRecords: "Memuat...",
-            zeroRecords: "Tidak ada data ditemukan",
-            emptyTable: "Tidak ada data",
-            paginate: {
-                first: "Pertama",
-                previous: "Sebelumnya",
-                next: "Selanjutnya",
-                last: "Terakhir"
-            }
+            paginate: { first: "Pertama", previous: "Sebelumnya", next: "Selanjutnya", last: "Terakhir" }
         },
-        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-             "<'row'<'col-sm-12'tr>>" +
-             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
-             "<'row'<'col-sm-12'B>>",
-        buttons: [
-            { extend: 'excel', text: '<i class="bi bi-file-earmark-excel"></i> Excel', className: 'btn btn-success btn-sm' },
-            { extend: 'pdf', text: '<i class="bi bi-file-earmark-pdf"></i> PDF', className: 'btn btn-danger btn-sm' },
-            { extend: 'print', text: '<i class="bi bi-printer"></i> Print', className: 'btn btn-info btn-sm' }
-        ],
-        responsive: true,
         order: [[1, 'asc']]
     });
-    
-    // Preview duration when time changes
-    function previewDuration() {
-        const startTime = $('#start_time').val();
-        const endTime = $('#end_time').val();
-        
-        if (startTime && endTime) {
-            const start = new Date('1970-01-01T' + startTime + ':00');
-            const end = new Date('1970-01-01T' + endTime + ':00');
-            
-            if (end > start) {
-                const diffMs = end - start;
-                const diffMinutes = diffMs / (1000 * 60);
-                
-                let durationText = '';
-                if (diffMinutes >= 60) {
-                    const hours = Math.floor(diffMinutes / 60);
-                    const minutes = diffMinutes % 60;
-                    if (minutes > 0) {
-                        durationText = hours + ' jam ' + minutes + ' menit';
-                    } else {
-                        durationText = hours + ' jam';
-                    }
-                } else {
-                    durationText = diffMinutes + ' menit';
-                }
-                
-                $('#previewDuration').text(durationText);
-                $('#durationPreview').show();
-            } else {
-                $('#durationPreview').hide();
-            }
-        } else {
-            $('#durationPreview').hide();
-        }
-    }
-    
-    $('#start_time, #end_time').on('change', previewDuration);
-    
-    // Submit form via AJAX
+
+    // ===== SUBMIT FORM =====
     $('#lessonHourForm').on('submit', function(e) {
         e.preventDefault();
-        
-        // Validate time
+
         const startTime = $('#start_time').val();
         const endTime = $('#end_time').val();
-        
-        if (startTime >= endTime) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Validasi Gagal',
-                text: 'Waktu Selesai harus lebih besar dari Waktu Mulai!',
-                timer: 3000
-            });
+
+        if (!startTime || !endTime) {
+            Swal.fire({ icon: 'error', title: 'Validasi Gagal', text: 'Waktu harus diisi!' });
             return;
         }
-        
-        // Disable submit button
+
+        if (compareTimes(startTime, endTime) <= 0) {
+            Swal.fire({ icon: 'error', title: 'Validasi Gagal', text: 'Waktu Selesai harus lebih besar dari Waktu Mulai!' });
+            return;
+        }
+
         const submitBtn = $(this).find('button[type="submit"]');
         const originalText = submitBtn.html();
-        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
-        
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Menyimpan...');
+
         const id = $('#lesson_hour_id').val();
         let url, method;
-        
         if (id) {
-            // Untuk update
             url = "{{ url('admin/lesson-hours') }}/" + id;
             method = 'POST';
-            // Tambahkan _method=PUT untuk Laravel
             if ($('#lessonHourForm input[name="_method"]').length === 0) {
                 $('#lessonHourForm').append('<input type="hidden" name="_method" value="PUT">');
-            } else {
-                $('#lessonHourForm input[name="_method"]').val('PUT');
             }
         } else {
-            // Untuk store
             url = "{{ route('lesson-hours.store') }}";
             method = 'POST';
-            // Hapus _method jika ada
             $('#lessonHourForm input[name="_method"]').remove();
         }
-        
-        console.log('Submitting to:', url, 'Method:', method, 'ID:', id);
-        
+
         $.ajax({
             url: url,
             type: method,
             data: $(this).serialize(),
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function(response) {
-                console.log('Success:', response);
                 if (response.success) {
                     $('#modalLessonHour').modal('hide');
                     resetForm();
                     table.ajax.reload();
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000, showConfirmButton: false });
                 }
             },
             error: function(xhr) {
-                console.error('Error:', xhr);
-                
                 if (xhr.status === 422) {
                     const errors = xhr.responseJSON.errors;
                     $('.is-invalid').removeClass('is-invalid');
                     $('.invalid-feedback').text('');
-                    
                     $.each(errors, function(key, value) {
                         const input = $('[name="' + key + '"]');
                         input.addClass('is-invalid');
                         input.siblings('.invalid-feedback').text(value[0]);
                     });
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validasi Gagal',
-                        text: 'Silakan periksa kembali form Anda.',
-                        timer: 3000
-                    });
+                    Swal.fire({ icon: 'error', title: 'Validasi Gagal', text: 'Silakan periksa kembali form Anda.' });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: xhr.responseJSON?.message || 'Terjadi kesalahan. Silakan coba lagi.',
-                        timer: 3000
-                    });
+                    Swal.fire({ icon: 'error', title: 'Gagal!', text: xhr.responseJSON?.message || 'Terjadi kesalahan.' });
                 }
             },
             complete: function() {
@@ -366,90 +273,53 @@ $(document).ready(function() {
     });
 });
 
-// Function to edit lesson hour
+// ===== FUNGSI GLOBAL =====
 function editLessonHour(id) {
-    console.log('Editing lesson hour ID:', id);
-    
-    const url = "{{ url('admin/lesson-hours') }}/" + id + "/edit";
-    
     $.ajax({
-        url: url,
+        url: "{{ url('admin/lesson-hours') }}/" + id + "/edit",
         type: "GET",
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
         success: function(data) {
-            console.log('Edit success:', data);
-            
             $('#lesson_hour_id').val(data.id);
             $('#session').val(data.session);
-            $('#start_time').val(data.start_time);
-            $('#end_time').val(data.end_time);
-            
-            // Trigger preview
+            // 🔥 Data dari database sudah format H:i
+            $('#start_time').val(data.start_time.substring(0,5));
+            $('#end_time').val(data.end_time.substring(0,5));
+            // 🔥 Trigger change untuk preview
             $('#start_time, #end_time').trigger('change');
-            
             $('#modalLessonHourLabel').text('Edit Jam Pembelajaran');
             $('#modalLessonHour').modal('show');
         },
-        error: function(xhr) {
-            console.error('Edit error:', xhr);
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: 'Data tidak ditemukan.',
-                timer: 2000,
-                showConfirmButton: false
-            });
+        error: function() {
+            Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Data tidak ditemukan.' });
         }
     });
 }
 
-// Function to confirm delete
 function confirmDelete(id, name) {
     $('#hapus_id').val(id);
     $('#lesson_hour_name').text(name);
     $('#modalHapus').modal('show');
 }
 
-// Function to delete lesson hour
 function deleteLessonHour() {
     const id = $('#hapus_id').val();
-    const url = "{{ url('admin/lesson-hours') }}/" + id;
-    
     $.ajax({
-        url: url,
+        url: "{{ url('admin/lesson-hours') }}/" + id,
         type: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
         success: function(response) {
             if (response.success) {
                 $('#modalHapus').modal('hide');
                 $('#lessonHourTable').DataTable().ajax.reload();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: response.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message, timer: 2000, showConfirmButton: false });
             }
         },
-        error: function(xhr) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: xhr.responseJSON?.message || 'Terjadi kesalahan. Silakan coba lagi.',
-                timer: 3000,
-                showConfirmButton: false
-            });
+        error: function() {
+            Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' });
         }
     });
 }
 
-// Reset form
 function resetForm() {
     $('#lessonHourForm')[0].reset();
     $('#lesson_hour_id').val('');

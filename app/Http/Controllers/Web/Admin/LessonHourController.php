@@ -150,7 +150,11 @@ class LessonHourController extends Controller
     public function edit($id)
     {
         $lessonHour = LessonHour::findOrFail($id);
-        return response()->json($lessonHour);
+        // Format waktu menjadi H:i (tanpa detik)
+        $data = $lessonHour->toArray();
+        $data['start_time'] = substr($lessonHour->start_time, 0, 5); // "HH:ii"
+        $data['end_time'] = substr($lessonHour->end_time, 0, 5);
+        return response()->json($data);
     }
 
     /**
