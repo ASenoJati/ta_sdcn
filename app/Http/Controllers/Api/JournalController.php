@@ -98,9 +98,10 @@ class JournalController extends Controller
             // 🔍 LOG: cari jurnal dengan 2 pendekatan
             // Pendekatan 1: berdasarkan subject, classroom, date
             $journal1 = TeachingJournal::where('user_id', $request->user()->id)
-                ->where('subject_id', $subjectId)
-                ->where('classroom_id', $classroomId)
                 ->whereDate('date', $today)
+                ->whereHas('schedules', function ($q) use ($scheduleIds) {
+                    $q->whereIn('teaching_schedule_id', $scheduleIds);
+                })
                 ->first();
 
             // Pendekatan 2: berdasarkan schedules (pivot)
@@ -310,7 +311,7 @@ class JournalController extends Controller
             return collect([$schedule->id]);
         }
 
-        // Ambil semua jadwal pada hari yang sama, dengan subject & classroom yang sama
+        // Ambil semua jadwal pada hari yang sama, subject & classroom sama
         $schedules = TeachingSchedule::with('lessonHour')
             ->where('day', $day)
             ->where('subject_id', $subjectId)
@@ -318,7 +319,11 @@ class JournalController extends Controller
             ->orderBy('lesson_hour_id')
             ->get();
 
-        // Kelompokkan berdasarkan sesi berurutan (gunakan logika yang sama dengan groupSchedules)
+        if ($schedules->isEmpty()) {
+            return collect([$schedule->id]);
+        }
+
+        // Gunakan groupSchedules yang sama seperti di index
         $groups = $this->groupSchedules($schedules);
 
         // Cari group yang mengandung schedule yang diminta
@@ -329,7 +334,6 @@ class JournalController extends Controller
             }
         }
 
-        // Fallback: hanya schedule itu sendiri
         return collect([$schedule->id]);
     }
 
@@ -351,19 +355,19 @@ class JournalController extends Controller
             return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan'], 404);
         }
 
-        // Validasi tambahan: pastikan subject_id dan classroom_id tidak null
-        if (is_null($schedule->subject_id) || is_null($schedule->classroom_id)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data jadwal tidak lengkap (subject/classroom kosong)'
-            ], 400);
-        }
-
         $user = $request->user();
         $today = now()->toDateString();
 
-        return DB::transaction(function () use ($request, $schedule, $user, $today) {
-            // Buat atau ambil jurnal berdasarkan grouping (subject, classroom, date)
+        Log::info('StoreAttendance - START', [
+            'schedule_id' => $schedule->id,
+            'subject_id' => $schedule->subject_id,
+            'classroom_id' => $schedule->classroom_id,
+            'user_id' => $user->id,
+            'today' => $today,
+        ]);
+
+        DB::transaction(function () use ($request, $schedule, $user, $today) {
+            // Cari atau buat jurnal
             $journal = TeachingJournal::firstOrCreate(
                 [
                     'user_id' => $user->id,
@@ -377,15 +381,29 @@ class JournalController extends Controller
                 ]
             );
 
-            // Dapatkan semua schedule ID dalam blok yang sama
-            $scheduleIds = $this->getBlockScheduleIds($schedule);
+            Log::info('StoreAttendance - Journal', [
+                'journal_id' => $journal->id,
+                'was_recently_created' => $journal->wasRecentlyCreated,
+                'data' => $journal->toArray(),
+            ]);
 
-            // Attach semua schedule dalam blok (jika belum ada)
+            // Dapatkan semua schedule ID dalam blok
+            $scheduleIds = $this->getBlockScheduleIds($schedule);
+            Log::info('StoreAttendance - Schedule IDs in block', $scheduleIds->toArray());
+
+            // Attach jika belum ada
             $currentIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
             $newIds = $scheduleIds->diff($currentIds)->values()->toArray();
             if (!empty($newIds)) {
                 $journal->schedules()->attach($newIds);
+                Log::info('StoreAttendance - Attached new schedules', $newIds);
+            } else {
+                Log::info('StoreAttendance - No new schedules to attach');
             }
+
+            // Cek pivot setelah attach
+            $pivotIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
+            Log::info('StoreAttendance - Pivot after attach', $pivotIds);
 
             // Update material
             $journal->update(['material' => $request->material]);
@@ -401,12 +419,15 @@ class JournalController extends Controller
                 );
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Presensi berhasil disimpan',
-                'journal_id' => $journal->id
-            ]);
+            $attendanceCount = StudentAttendance::where('teaching_journal_id', $journal->id)->count();
+            Log::info('StoreAttendance - Attendance saved', ['count' => $attendanceCount]);
         });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Presensi berhasil disimpan',
+            'journal_id' => $journal->id ?? null,
+        ]);
     }
 
     /**
