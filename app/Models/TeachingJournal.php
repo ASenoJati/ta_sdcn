@@ -104,6 +104,26 @@ class TeachingJournal extends Model
         return $this->belongsToMany(TeachingSchedule::class, 'journal_schedules');
     }
 
+    // Aksesori: ambil jadwal pertama (untuk keperluan tampilan ringkas)
+    public function getFirstScheduleAttribute()
+    {
+        return $this->schedules()->first();
+    }
+
+    // Aksesori: gabungan sesi (misal "1, 2")
+    public function getSessionsAttribute()
+    {
+        return $this->schedules->pluck('lessonHour.session')->unique()->implode(', ');
+    }
+
+    // Aksesori: range waktu (start min, end max)
+    public function getTimeRangeAttribute()
+    {
+        $start = $this->schedules->pluck('lessonHour.start_time')->min();
+        $end = $this->schedules->pluck('lessonHour.end_time')->max();
+        return $start && $end ? "$start - $end" : '-';
+    }
+
     // Tambahkan method untuk mendapatkan semua jam pelajaran yang tergabung
     public function getLessonHoursAttribute()
     {
