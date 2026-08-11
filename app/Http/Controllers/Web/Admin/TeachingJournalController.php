@@ -98,23 +98,23 @@ class TeachingJournalController extends Controller
             'materials.students',
         ])->findOrFail($id);
 
-        // Ambil jadwal pertama untuk keperluan kelas (semua jadwal dalam satu blok pasti memiliki classroom yang sama)
+        // Ambil jadwal pertama (semua jadwal dalam blok memiliki subject, classroom, teacher yang sama)
         $firstSchedule = $journal->schedules->first();
         if (!$firstSchedule) {
             return redirect()->route('teaching-journals.index')
                 ->with('error', 'Jurnal ini tidak memiliki jadwal yang valid.');
         }
 
+        // Ambil siswa dari kelas yang sama
         $classroomStudents = Student::where('classroom_id', $firstSchedule->classroom_id)
             ->orderBy('name')
             ->get();
 
-        // Filter siswa tidak hadir
+        // Filter siswa tidak hadir (izin, sakit, alpa)
         $filteredAttendances = $journal->attendances->filter(function ($attendance) {
             return in_array($attendance->status, ['izin', 'sakit', 'alpa']);
         });
 
-        // Kirim data tambahan ke view
         return view('admin.teaching-journals.show', compact(
             'journal',
             'firstSchedule',
