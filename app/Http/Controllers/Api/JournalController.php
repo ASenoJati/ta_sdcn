@@ -82,31 +82,30 @@ class JournalController extends Controller
             ->get();
 
         if ($schedules->isEmpty()) {
-            return response()->json([
-                'success' => true,
-                'data' => []
-            ]);
+            return response()->json(['success' => true, 'data' => []]);
         }
 
-        // Kelompokkan jadwal per blok pertemuan
         $groups = $this->groupSchedules($schedules);
-
         $result = [];
+
         foreach ($groups as $group) {
             $firstSchedule = $group['schedules']->first();
-            $scheduleIds = $group['schedules']->pluck('id')->toArray();
+            $subjectId = $group['subject_id'];
+            $classroomId = $group['classroom_id'];
 
-            // Cek apakah sudah ada jurnal untuk blok ini (hari ini)
-            $journalExists = TeachingJournal::where('user_id', $request->user()->id)
-                ->where('subject_id', $group['subject_id'])
-                ->where('classroom_id', $group['classroom_id'])
+            // Cari jurnal berdasarkan subject, classroom, dan tanggal (tanpa whereHas)
+            $journal = TeachingJournal::where('user_id', $request->user()->id)
+                ->where('subject_id', $subjectId)
+                ->where('classroom_id', $classroomId)
                 ->whereDate('date', $today)
-                ->whereHas('schedules', function ($q) use ($scheduleIds) {
-                    $q->whereIn('teaching_schedule_id', $scheduleIds);
-                })
-                ->exists();
+                ->first();
 
-            // Ambil semua lesson_hour dari schedules di group
+            // Cek apakah jurnal sudah memiliki data presensi
+            $isFilled = false;
+            if ($journal) {
+                $isFilled = $journal->attendances()->exists();
+            }
+
             $lessonHours = $group['schedules']->map(function ($s) {
                 return [
                     'id' => $s->lessonHour->id,
@@ -117,7 +116,6 @@ class JournalController extends Controller
             })->values();
 
             $result[] = [
-                // Gunakan ID schedule pertama sebagai representasi
                 'id' => $firstSchedule->id,
                 'subject' => $firstSchedule->subject ? [
                     'id' => $firstSchedule->subject->id,
@@ -127,9 +125,9 @@ class JournalController extends Controller
                     'id' => $firstSchedule->classroom->id,
                     'name' => $firstSchedule->classroom->name,
                 ] : null,
-                'lesson_hours' => $lessonHours, // array semua jam dalam blok
+                'lesson_hours' => $lessonHours,
                 'day' => $firstSchedule->day,
-                'is_journal_filled' => $journalExists,
+                'is_journal_filled' => $isFilled,
             ];
         }
 
