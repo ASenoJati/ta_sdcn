@@ -28,18 +28,20 @@ class TeachingJournalController extends Controller
             return DataTables::of($journals)
                 ->addIndexColumn()
                 ->addColumn('schedule_info', function ($row) {
-                    $schedule = $row->teachingSchedule;
-                    if (!$schedule) {
+                    $first = $row->schedules->first();
+                    if (!$first) {
                         return '<div><span class="text-danger">Jadwal tidak ditemukan</span></div>';
                     }
-                    $subjectName = $schedule->subject ? $schedule->subject->name : '-';
-                    $className = $schedule->classroom ? $schedule->classroom->name : '-';
-                    $teacherName = $schedule->teacher ? $schedule->teacher->name : '-';
+                    $subjectName = $first->subject ? $first->subject->name : '-';
+                    $className = $first->classroom ? $first->classroom->name : '-';
+                    $teacherName = $first->teacher ? $first->teacher->name : '-';
+                    $sessions = $row->schedules->pluck('lessonHour.session')->unique()->implode(', ');
                     return '<div>
-                        <strong>' . $subjectName . '</strong><br>
-                        <small>Kelas: ' . $className . '</small><br>
-                        <small>Guru: ' . $teacherName . '</small>
-                    </div>';
+                    <strong>' . $subjectName . '</strong><br>
+                    <small>Kelas: ' . $className . '</small><br>
+                    <small>Guru: ' . $teacherName . '</small><br>
+                    <small>Jam: ' . $sessions . '</small>
+                </div>';
                 })
                 ->addColumn('date_info', function ($row) {
                     return '<div>
