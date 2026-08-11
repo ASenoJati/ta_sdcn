@@ -52,18 +52,21 @@
                                   <th>Guru</th>
     <td>{{ $firstSchedule->teacher->name ?? '-' }}</td>
                             </tr>
-                            <tr>
-                                <th>Jam Pelajaran</th>
-                               <td>
-        @php
-            $sessions = $journal->schedules->pluck('lessonHour.session')->unique()->implode(', ');
-            $start = $journal->schedules->pluck('lessonHour.start_time')->min();
-            $end = $journal->schedules->pluck('lessonHour.end_time')->max();
-        @endphp
-        Jam ke-{{ $sessions }} ({{ $start }} - {{ $end }})
-    </td>
-                            </tr>
                           <tr>
+    <th>Jam Pelajaran</th>
+    <td>
+        @if($journal->schedules->isNotEmpty())
+            @php
+                $sessions = $journal->schedules->pluck('lessonHour.session')->unique()->implode(', ');
+                $start = $journal->schedules->pluck('lessonHour.start_time')->min();
+                $end = $journal->schedules->pluck('lessonHour.end_time')->max();
+            @endphp
+            Jam ke-{{ $sessions }} ({{ $start }} - {{ $end }})
+        @else
+            -
+        @endif
+    </td>
+</tr>
     <th>Materi</th>
     <td>
         {{ $journal->material ?? '-' }}
