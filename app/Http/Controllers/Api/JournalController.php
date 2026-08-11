@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Models\StudentAttendance;
 use App\Models\TeachingJournal;
 use App\Models\TeachingSchedule;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,9 +19,7 @@ class JournalController extends Controller
      */
     private function groupSchedules($schedules)
     {
-        // Urutkan berdasarkan lesson_hour_id
         $sorted = $schedules->sortBy('lesson_hour_id')->values();
-
         $groups = [];
         $currentGroup = null;
 
@@ -30,7 +29,6 @@ class JournalController extends Controller
             $session = $schedule->lessonHour->session;
 
             if ($currentGroup === null) {
-                // Mulai group baru
                 $currentGroup = [
                     'subject_id' => $subjectId,
                     'classroom_id' => $classroomId,
@@ -40,17 +38,14 @@ class JournalController extends Controller
                 continue;
             }
 
-            // Cek apakah subject dan classroom sama, serta session berurutan
             if (
                 $currentGroup['subject_id'] == $subjectId &&
                 $currentGroup['classroom_id'] == $classroomId &&
                 $session == $currentGroup['last_session'] + 1
             ) {
-                // Masukkan ke group yang sama
                 $currentGroup['schedules']->push($schedule);
                 $currentGroup['last_session'] = $session;
             } else {
-                // Simpan group sebelumnya, mulai group baru
                 $groups[] = $currentGroup;
                 $currentGroup = [
                     'subject_id' => $subjectId,
@@ -73,8 +68,9 @@ class JournalController extends Controller
      */
     public function index(Request $request)
     {
-        $today = now()->toDateString();
-        $dayName = now()->format('l');
+        // 🟢 Gunakan timezone Asia/Jakarta untuk konsistensi
+        $today = Carbon::now('Asia/Jakarta')->toDateString(); // '2026-08-11'
+        $dayName = Carbon::now('Asia/Jakarta')->format('l');
 
         $schedules = TeachingSchedule::with(['subject', 'classroom', 'lessonHour'])
             ->where('user_id', $request->user()->id)
@@ -93,46 +89,27 @@ class JournalController extends Controller
             $firstSchedule = $group['schedules']->first();
             $subjectId = $group['subject_id'];
             $classroomId = $group['classroom_id'];
-            $scheduleIds = $group['schedules']->pluck('id')->toArray();
 
-            // 🔍 LOG: cari jurnal dengan 2 pendekatan
-            // Pendekatan 1: berdasarkan subject, classroom, date
-            $journal1 = TeachingJournal::where('user_id', $request->user()->id)
-                ->whereDate('date', $today)
-                ->whereHas('schedules', function ($q) use ($scheduleIds) {
-                    $q->whereIn('teaching_schedule_id', $scheduleIds);
-                })
+            // 🟢 Cari jurnal berdasarkan subject + classroom + date (string)
+            $journal = TeachingJournal::where('user_id', $request->user()->id)
+                ->where('subject_id', $subjectId)
+                ->where('classroom_id', $classroomId)
+                ->where('date', $today) // langsung bandingkan string
                 ->first();
-
-            // Pendekatan 2: berdasarkan schedules (pivot)
-            $journal2 = TeachingJournal::where('user_id', $request->user()->id)
-                ->whereDate('date', $today)
-                ->whereHas('schedules', function ($q) use ($scheduleIds) {
-                    $q->whereIn('teaching_schedule_id', $scheduleIds);
-                })
-                ->first();
-
-            Log::info('Journal check', [
-                'group' => [
-                    'subject_id' => $subjectId,
-                    'classroom_id' => $classroomId,
-                    'schedule_ids' => $scheduleIds,
-                ],
-                'journal_by_subject' => $journal1 ? $journal1->id : null,
-                'journal_by_pivot' => $journal2 ? $journal2->id : null,
-            ]);
-
-            // Gunakan journal yang ditemukan (prioritas yang pertama)
-            $journal = $journal1 ?? $journal2;
 
             $isFilled = false;
             if ($journal) {
                 $isFilled = $journal->attendances()->exists();
-                Log::info('Attendance check', [
-                    'journal_id' => $journal->id,
-                    'has_attendance' => $isFilled,
-                ]);
             }
+
+            // 🟢 Log untuk debugging
+            Log::info('INDEX - Journal check', [
+                'subject_id' => $subjectId,
+                'classroom_id' => $classroomId,
+                'date' => $today,
+                'journal_id' => $journal ? $journal->id : null,
+                'has_attendance' => $isFilled,
+            ]);
 
             $lessonHours = $group['schedules']->map(function ($s) {
                 return [
@@ -166,7 +143,7 @@ class JournalController extends Controller
     }
 
     /**
-     * 2. Detail Jurnal (berdasarkan schedule_id) - tetap pakai schedule_id, cari jurnal dari grouping
+     * 2. Detail Jurnal (berdasarkan schedule_id)
      */
     public function detail($scheduleId)
     {
@@ -181,7 +158,6 @@ class JournalController extends Controller
         $today = now()->toDateString();
         $user = request()->user();
 
-        // Cari jurnal berdasarkan grouping
         $journal = TeachingJournal::where('user_id', $user->id)
             ->where('subject_id', $schedule->subject_id)
             ->where('classroom_id', $schedule->classroom_id)
@@ -240,7 +216,7 @@ class JournalController extends Controller
     }
 
     /**
-     * 3. Ambil Siswa Berdasarkan Jadwal (tetap pakai schedule_id)
+     * 3. Ambil Siswa Berdasarkan Jadwal
      */
     public function getStudentsBySchedule($scheduleId)
     {
@@ -252,7 +228,7 @@ class JournalController extends Controller
             ], 404);
         }
 
-        $today = now('Asia/Jakarta')->toDateString();
+        $today = now()->toDateString();
         $user = request()->user();
 
         $journal = TeachingJournal::where('user_id', $user->id)
@@ -299,7 +275,6 @@ class JournalController extends Controller
 
     /**
      * Ambil semua teaching_schedule_id dalam satu blok pertemuan
-     * (subject & classroom sama, jam berurutan)
      */
     private function getBlockScheduleIds($schedule)
     {
@@ -311,7 +286,6 @@ class JournalController extends Controller
             return collect([$schedule->id]);
         }
 
-        // Ambil semua jadwal pada hari yang sama, subject & classroom sama
         $schedules = TeachingSchedule::with('lessonHour')
             ->where('day', $day)
             ->where('subject_id', $subjectId)
@@ -323,10 +297,7 @@ class JournalController extends Controller
             return collect([$schedule->id]);
         }
 
-        // Gunakan groupSchedules yang sama seperti di index
         $groups = $this->groupSchedules($schedules);
-
-        // Cari group yang mengandung schedule yang diminta
         foreach ($groups as $group) {
             $ids = $group['schedules']->pluck('id')->toArray();
             if (in_array($schedule->id, $ids)) {
@@ -355,8 +326,16 @@ class JournalController extends Controller
             return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan'], 404);
         }
 
+        if (is_null($schedule->subject_id) || is_null($schedule->classroom_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data jadwal tidak lengkap (subject/classroom kosong)'
+            ], 400);
+        }
+
         $user = $request->user();
-        $today = now()->toDateString();
+        // 🟢 Gunakan Carbon dengan timezone yang benar
+        $today = Carbon::now('Asia/Jakarta')->toDateString(); // '2026-08-11'
 
         Log::info('StoreAttendance - START', [
             'schedule_id' => $schedule->id,
@@ -367,13 +346,13 @@ class JournalController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $schedule, $user, $today) {
-            // Cari atau buat jurnal
+            // 🟢 Gunakan string $today untuk kolom date
             $journal = TeachingJournal::firstOrCreate(
                 [
                     'user_id' => $user->id,
                     'subject_id' => $schedule->subject_id,
                     'classroom_id' => $schedule->classroom_id,
-                    'date' => $today,
+                    'date' => $today, // string '2026-08-11'
                 ],
                 [
                     'material' => $request->material,
@@ -384,31 +363,22 @@ class JournalController extends Controller
             Log::info('StoreAttendance - Journal', [
                 'journal_id' => $journal->id,
                 'was_recently_created' => $journal->wasRecentlyCreated,
-                'data' => $journal->toArray(),
+                'date' => $journal->date, // seharusnya '2026-08-11'
             ]);
-
-            // Dapatkan semua schedule ID dalam blok
-            $scheduleIds = $this->getBlockScheduleIds($schedule);
-            Log::info('StoreAttendance - Schedule IDs in block', $scheduleIds->toArray());
-
-            // Attach jika belum ada
-            $currentIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
-            $newIds = $scheduleIds->diff($currentIds)->values()->toArray();
-            if (!empty($newIds)) {
-                $journal->schedules()->attach($newIds);
-                Log::info('StoreAttendance - Attached new schedules', $newIds);
-            } else {
-                Log::info('StoreAttendance - No new schedules to attach');
-            }
-
-            // Cek pivot setelah attach
-            $pivotIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
-            Log::info('StoreAttendance - Pivot after attach', $pivotIds);
 
             // Update material
             $journal->update(['material' => $request->material]);
 
-            // Simpan presensi siswa
+            // Attach pivot
+            $scheduleIds = $this->getBlockScheduleIds($schedule);
+            $currentIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
+            $newIds = $scheduleIds->diff($currentIds)->values()->toArray();
+            if (!empty($newIds)) {
+                $journal->schedules()->syncWithoutDetaching($newIds);
+                Log::info('StoreAttendance - Attached schedules', $newIds);
+            }
+
+            // Simpan presensi
             foreach ($request->attendances as $att) {
                 StudentAttendance::updateOrCreate(
                     [
@@ -419,14 +389,14 @@ class JournalController extends Controller
                 );
             }
 
-            $attendanceCount = StudentAttendance::where('teaching_journal_id', $journal->id)->count();
-            Log::info('StoreAttendance - Attendance saved', ['count' => $attendanceCount]);
+            Log::info('StoreAttendance - Attendance saved', [
+                'count' => StudentAttendance::where('teaching_journal_id', $journal->id)->count()
+            ]);
         });
 
         return response()->json([
             'success' => true,
             'message' => 'Presensi berhasil disimpan',
-            'journal_id' => $journal->id ?? null,
         ]);
     }
 
@@ -482,7 +452,7 @@ class JournalController extends Controller
     }
 
     /**
-     * 7. Semua Jadwal Mingguan (dikelompokkan juga)
+     * 7. Semua Jadwal Mingguan
      */
     public function allSchedules(Request $request)
     {
@@ -497,7 +467,6 @@ class JournalController extends Controller
         $formattedData = [];
         foreach ($days as $day) {
             if (isset($allSchedules[$day]) && $allSchedules[$day]->isNotEmpty()) {
-                // Kelompokkan per blok pertemuan
                 $groups = $this->groupSchedules($allSchedules[$day]);
                 $formattedData[$day] = collect($groups)->map(function ($group) {
                     $first = $group['schedules']->first();
