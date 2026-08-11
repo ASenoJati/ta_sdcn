@@ -50,9 +50,9 @@ class TeachingSchedule extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function journals(): HasMany
+    public function journals()
     {
-        return $this->hasMany(TeachingJournal::class);
+        return $this->belongsToMany(TeachingJournal::class, 'journal_schedules');
     }
 
     public function lessonHour(): BelongsTo

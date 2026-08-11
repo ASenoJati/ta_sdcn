@@ -272,6 +272,43 @@ class JournalController extends Controller
     }
 
     /**
+     * Ambil semua teaching_schedule_id dalam satu blok pertemuan
+     * (subject & classroom sama, jam berurutan)
+     */
+    private function getBlockScheduleIds($schedule)
+    {
+        $day = $schedule->day;
+        $subjectId = $schedule->subject_id;
+        $classroomId = $schedule->classroom_id;
+
+        if (is_null($subjectId) || is_null($classroomId)) {
+            return collect([$schedule->id]);
+        }
+
+        // Ambil semua jadwal pada hari yang sama, dengan subject & classroom yang sama
+        $schedules = TeachingSchedule::with('lessonHour')
+            ->where('day', $day)
+            ->where('subject_id', $subjectId)
+            ->where('classroom_id', $classroomId)
+            ->orderBy('lesson_hour_id')
+            ->get();
+
+        // Kelompokkan berdasarkan sesi berurutan (gunakan logika yang sama dengan groupSchedules)
+        $groups = $this->groupSchedules($schedules);
+
+        // Cari group yang mengandung schedule yang diminta
+        foreach ($groups as $group) {
+            $ids = $group['schedules']->pluck('id')->toArray();
+            if (in_array($schedule->id, $ids)) {
+                return collect($ids);
+            }
+        }
+
+        // Fallback: hanya schedule itu sendiri
+        return collect([$schedule->id]);
+    }
+
+    /**
      * 4. Simpan Presensi (create or update)
      */
     public function storeAttendance(Request $request)
@@ -286,17 +323,22 @@ class JournalController extends Controller
 
         $schedule = TeachingSchedule::find($request->teaching_schedule_id);
         if (!$schedule) {
+            return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan'], 404);
+        }
+
+        // Validasi tambahan: pastikan subject_id dan classroom_id tidak null
+        if (is_null($schedule->subject_id) || is_null($schedule->classroom_id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Jadwal tidak ditemukan'
-            ], 404);
+                'message' => 'Data jadwal tidak lengkap (subject/classroom kosong)'
+            ], 400);
         }
 
         $user = $request->user();
         $today = now()->toDateString();
 
         return DB::transaction(function () use ($request, $schedule, $user, $today) {
-            // Cari atau buat jurnal berdasarkan grouping
+            // Buat atau ambil jurnal berdasarkan grouping (subject, classroom, date)
             $journal = TeachingJournal::firstOrCreate(
                 [
                     'user_id' => $user->id,
@@ -310,17 +352,20 @@ class JournalController extends Controller
                 ]
             );
 
-            // Relasikan dengan schedule (many-to-many) jika belum ada
-            if (!$journal->schedules()->where('teaching_schedule_id', $schedule->id)->exists()) {
-                $journal->schedules()->attach($schedule->id);
+            // Dapatkan semua schedule ID dalam blok yang sama
+            $scheduleIds = $this->getBlockScheduleIds($schedule);
+
+            // Attach semua schedule dalam blok (jika belum ada)
+            $currentIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
+            $newIds = $scheduleIds->diff($currentIds)->values()->toArray();
+            if (!empty($newIds)) {
+                $journal->schedules()->attach($newIds);
             }
 
-            // Update material jika jurnal sudah ada
-            if (!$journal->wasRecentlyCreated) {
-                $journal->update(['material' => $request->material]);
-            }
+            // Update material
+            $journal->update(['material' => $request->material]);
 
-            // Simpan atau update presensi siswa
+            // Simpan presensi siswa
             foreach ($request->attendances as $att) {
                 StudentAttendance::updateOrCreate(
                     [

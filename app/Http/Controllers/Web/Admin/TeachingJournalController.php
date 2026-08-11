@@ -22,7 +22,7 @@ class TeachingJournalController extends Controller
     public function getData(Request $request)
     {
         try {
-            $journals = TeachingJournal::with(['teachingSchedule.teacher', 'teachingSchedule.subject', 'teachingSchedule.classroom', 'teachingSchedule.lessonHour'])
+            $journals = TeachingJournal::with(['schedules.subject', 'schedules.classroom', 'schedules.teacher', 'schedules.lessonHour'])
                 ->select('teaching_journals.*');
 
             return DataTables::of($journals)
@@ -88,29 +88,37 @@ class TeachingJournalController extends Controller
     public function show($id)
     {
         $journal = TeachingJournal::with([
-            'teachingSchedule.teacher',
-            'teachingSchedule.subject',
-            'teachingSchedule.classroom',
-            'teachingSchedule.lessonHour',
+            'schedules.teacher',
+            'schedules.subject',
+            'schedules.classroom',
+            'schedules.lessonHour',
             'attendances.student',
             'materials.students',
         ])->findOrFail($id);
 
-        if (!$journal->teachingSchedule) {
+        // Ambil jadwal pertama untuk keperluan kelas (semua jadwal dalam satu blok pasti memiliki classroom yang sama)
+        $firstSchedule = $journal->schedules->first();
+        if (!$firstSchedule) {
             return redirect()->route('teaching-journals.index')
-                ->with('error', 'Jurnal ini tidak memiliki jadwal yang valid. Mungkin jadwal telah dihapus.');
+                ->with('error', 'Jurnal ini tidak memiliki jadwal yang valid.');
         }
 
-        $classroomStudents = Student::where('classroom_id', $journal->teachingSchedule->classroom_id)
+        $classroomStudents = Student::where('classroom_id', $firstSchedule->classroom_id)
             ->orderBy('name')
             ->get();
 
-        // Filter: Hanya siswa yang tidak hadir (izin, sakit, alpa)
+        // Filter siswa tidak hadir
         $filteredAttendances = $journal->attendances->filter(function ($attendance) {
             return in_array($attendance->status, ['izin', 'sakit', 'alpa']);
         });
 
-        return view('admin.teaching-journals.show', compact('journal', 'classroomStudents', 'filteredAttendances'));
+        // Kirim data tambahan ke view
+        return view('admin.teaching-journals.show', compact(
+            'journal',
+            'firstSchedule',
+            'classroomStudents',
+            'filteredAttendances'
+        ));
     }
 
     /**
@@ -226,6 +234,7 @@ class TeachingJournalController extends Controller
         ]);
 
         $journal = TeachingJournal::findOrFail($journalId);
+        $firstSchedule = $journal->schedules->first();
 
         $data = [
             'teaching_journal_id' => $journal->id,
@@ -281,7 +290,8 @@ class TeachingJournalController extends Controller
     public function getStudentsList($id)
     {
         $journal = TeachingJournal::findOrFail($id);
-        $students = Student::where('classroom_id', $journal->teachingSchedule->classroom_id)
+        $firstSchedule = $journal->schedules->first();
+        $students = Student::where('classroom_id', $firstSchedule->classroom_id)
             ->select('id', 'name', 'nis')
             ->orderBy('name')
             ->get();

@@ -41,27 +41,27 @@
                                 <td>{{ $journal->day_name }} - {{ $journal->date_formatted }}</td>
                             </tr>
                             <tr>
-                                <th>Mata Pelajaran</th>
-                                <td>{{ $journal->teachingSchedule->subject->name ?? '-' }}</td>
+                                 <th>Mata Pelajaran</th>
+    <td>{{ $firstSchedule->subject->name ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <th>Kelas</th>
-                                <td>{{ $journal->teachingSchedule->classroom->name ?? '-' }}</td>
+    <td>{{ $firstSchedule->classroom->name ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <th>Guru</th>
-                                <td>{{ $journal->teachingSchedule->teacher->name ?? '-' }}</td>
+                                  <th>Guru</th>
+    <td>{{ $firstSchedule->teacher->name ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <th>Jam Pelajaran</th>
-                                <td>
-                                    @if($journal->teachingSchedule && $journal->teachingSchedule->lessonHour)
-                                    {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->start_time)->format('H:i') }} -
-                                    {{ \Carbon\Carbon::parse($journal->teachingSchedule->lessonHour->end_time)->format('H:i') }}
-                                    @else
-                                    -
-                                    @endif
-                                </td>
+                               <td>
+        @php
+            $sessions = $journal->schedules->pluck('lessonHour.session')->unique()->implode(', ');
+            $start = $journal->schedules->pluck('lessonHour.start_time')->min();
+            $end = $journal->schedules->pluck('lessonHour.end_time')->max();
+        @endphp
+        Jam ke-{{ $sessions }} ({{ $start }} - {{ $end }})
+    </td>
                             </tr>
                           <tr>
     <th>Materi</th>
