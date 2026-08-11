@@ -9,6 +9,7 @@ use App\Models\TeachingJournal;
 use App\Models\TeachingSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class JournalController extends Controller
 {
@@ -92,18 +93,44 @@ class JournalController extends Controller
             $firstSchedule = $group['schedules']->first();
             $subjectId = $group['subject_id'];
             $classroomId = $group['classroom_id'];
+            $scheduleIds = $group['schedules']->pluck('id')->toArray();
 
-            // Cari jurnal berdasarkan subject, classroom, dan tanggal (tanpa whereHas)
-            $journal = TeachingJournal::where('user_id', $request->user()->id)
+            // 🔍 LOG: cari jurnal dengan 2 pendekatan
+            // Pendekatan 1: berdasarkan subject, classroom, date
+            $journal1 = TeachingJournal::where('user_id', $request->user()->id)
                 ->where('subject_id', $subjectId)
                 ->where('classroom_id', $classroomId)
                 ->whereDate('date', $today)
                 ->first();
 
-            // Cek apakah jurnal sudah memiliki data presensi
+            // Pendekatan 2: berdasarkan schedules (pivot)
+            $journal2 = TeachingJournal::where('user_id', $request->user()->id)
+                ->whereDate('date', $today)
+                ->whereHas('schedules', function ($q) use ($scheduleIds) {
+                    $q->whereIn('teaching_schedule_id', $scheduleIds);
+                })
+                ->first();
+
+            Log::info('Journal check', [
+                'group' => [
+                    'subject_id' => $subjectId,
+                    'classroom_id' => $classroomId,
+                    'schedule_ids' => $scheduleIds,
+                ],
+                'journal_by_subject' => $journal1 ? $journal1->id : null,
+                'journal_by_pivot' => $journal2 ? $journal2->id : null,
+            ]);
+
+            // Gunakan journal yang ditemukan (prioritas yang pertama)
+            $journal = $journal1 ?? $journal2;
+
             $isFilled = false;
             if ($journal) {
                 $isFilled = $journal->attendances()->exists();
+                Log::info('Attendance check', [
+                    'journal_id' => $journal->id,
+                    'has_attendance' => $isFilled,
+                ]);
             }
 
             $lessonHours = $group['schedules']->map(function ($s) {
