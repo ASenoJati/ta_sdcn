@@ -101,7 +101,7 @@ class TeachingJournal extends Model
 
     public function schedules()
     {
-        return $this->belongsToMany(TeachingSchedule::class, 'journal_schedules');
+        return $this->belongsToMany(TeachingSchedule::class, 'journal_schedules', 'teaching_journal_id', 'teaching_schedule_id');
     }
 
     // Aksesori: ambil jadwal pertama (untuk keperluan tampilan ringkas)
