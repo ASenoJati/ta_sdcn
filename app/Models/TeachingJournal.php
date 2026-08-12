@@ -13,6 +13,9 @@ class TeachingJournal extends Model
 
     protected $fillable = [
         'teaching_schedule_id',
+        'user_id',
+        'subject_id',
+        'classroom_id',
         'date',
         'material',
         'reflection'
