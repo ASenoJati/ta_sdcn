@@ -68,8 +68,7 @@ class JournalController extends Controller
      */
     public function index(Request $request)
     {
-        // 🟢 Gunakan timezone Asia/Jakarta untuk konsistensi
-        $today = Carbon::now('Asia/Jakarta')->toDateString(); // '2026-08-11'
+        $today = Carbon::now('Asia/Jakarta')->toDateString();
         $dayName = Carbon::now('Asia/Jakarta')->format('l');
 
         $schedules = TeachingSchedule::with(['subject', 'classroom', 'lessonHour'])
@@ -90,11 +89,11 @@ class JournalController extends Controller
             $subjectId = $group['subject_id'];
             $classroomId = $group['classroom_id'];
 
-            // 🟢 Cari jurnal berdasarkan subject + classroom + date (string)
+            // 🔥 PERBAIKAN: Gunakan whereDate untuk membandingkan tanggal
             $journal = TeachingJournal::where('user_id', $request->user()->id)
                 ->where('subject_id', $subjectId)
                 ->where('classroom_id', $classroomId)
-                ->where('date', $today) // langsung bandingkan string
+                ->whereDate('date', $today)
                 ->first();
 
             $isFilled = false;
@@ -102,7 +101,6 @@ class JournalController extends Controller
                 $isFilled = $journal->attendances()->exists();
             }
 
-            // 🟢 Log untuk debugging
             Log::info('INDEX - Journal check', [
                 'subject_id' => $subjectId,
                 'classroom_id' => $classroomId,
@@ -155,9 +153,10 @@ class JournalController extends Controller
             ], 404);
         }
 
-        $today = now()->toDateString();
+        $today = Carbon::now('Asia/Jakarta')->toDateString();
         $user = request()->user();
 
+        // 🔥 PERBAIKAN: Gunakan whereDate
         $journal = TeachingJournal::where('user_id', $user->id)
             ->where('subject_id', $schedule->subject_id)
             ->where('classroom_id', $schedule->classroom_id)
@@ -228,9 +227,10 @@ class JournalController extends Controller
             ], 404);
         }
 
-        $today = now()->toDateString();
+        $today = Carbon::now('Asia/Jakarta')->toDateString();
         $user = request()->user();
 
+        // 🔥 PERBAIKAN: Gunakan whereDate
         $journal = TeachingJournal::where('user_id', $user->id)
             ->where('subject_id', $schedule->subject_id)
             ->where('classroom_id', $schedule->classroom_id)
@@ -334,25 +334,15 @@ class JournalController extends Controller
         }
 
         $user = $request->user();
-        // 🟢 Gunakan Carbon dengan timezone yang benar
-        $today = Carbon::now('Asia/Jakarta')->toDateString(); // '2026-08-11'
-
-        Log::info('StoreAttendance - START', [
-            'schedule_id' => $schedule->id,
-            'subject_id' => $schedule->subject_id,
-            'classroom_id' => $schedule->classroom_id,
-            'user_id' => $user->id,
-            'today' => $today,
-        ]);
+        $today = Carbon::now('Asia/Jakarta')->toDateString();
 
         DB::transaction(function () use ($request, $schedule, $user, $today) {
-            // 🟢 Gunakan string $today untuk kolom date
             $journal = TeachingJournal::firstOrCreate(
                 [
                     'user_id' => $user->id,
                     'subject_id' => $schedule->subject_id,
                     'classroom_id' => $schedule->classroom_id,
-                    'date' => $today, // string '2026-08-11'
+                    'date' => $today,
                 ],
                 [
                     'material' => $request->material,
@@ -360,25 +350,15 @@ class JournalController extends Controller
                 ]
             );
 
-            Log::info('StoreAttendance - Journal', [
-                'journal_id' => $journal->id,
-                'was_recently_created' => $journal->wasRecentlyCreated,
-                'date' => $journal->date, // seharusnya '2026-08-11'
-            ]);
-
-            // Update material
             $journal->update(['material' => $request->material]);
 
-            // Attach pivot
             $scheduleIds = $this->getBlockScheduleIds($schedule);
             $currentIds = $journal->schedules()->pluck('teaching_schedule_id')->toArray();
             $newIds = $scheduleIds->diff($currentIds)->values()->toArray();
             if (!empty($newIds)) {
                 $journal->schedules()->syncWithoutDetaching($newIds);
-                Log::info('StoreAttendance - Attached schedules', $newIds);
             }
 
-            // Simpan presensi
             foreach ($request->attendances as $att) {
                 StudentAttendance::updateOrCreate(
                     [
@@ -390,6 +370,7 @@ class JournalController extends Controller
             }
 
             Log::info('StoreAttendance - Attendance saved', [
+                'journal_id' => $journal->id,
                 'count' => StudentAttendance::where('teaching_journal_id', $journal->id)->count()
             ]);
         });
