@@ -22,10 +22,38 @@ class TeachingJournalController extends Controller
     public function getData(Request $request)
     {
         try {
-            $journals = TeachingJournal::with(['schedules.subject', 'schedules.classroom', 'schedules.teacher', 'schedules.lessonHour'])
+            $query = TeachingJournal::with(['schedules.subject', 'schedules.classroom', 'schedules.teacher', 'schedules.lessonHour'])
                 ->select('teaching_journals.*');
 
-            return DataTables::of($journals)
+            // ===== FILTER =====
+            // Filter Mata Pelajaran
+            if ($request->filled('subject_id')) {
+                $query->whereHas('schedules.subject', function ($q) use ($request) {
+                    $q->where('id', $request->subject_id);
+                });
+            }
+
+            // Filter Guru
+            if ($request->filled('user_id')) {
+                $query->whereHas('schedules.teacher', function ($q) use ($request) {
+                    $q->where('id', $request->user_id);
+                });
+            }
+
+            // Filter Rentang Tanggal
+            if ($request->filled('date_from')) {
+                $query->whereDate('date', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $query->whereDate('date', '<=', $request->date_to);
+            }
+
+            // Jika tidak ada filter tanggal, default 1 bulan terakhir
+            if (!$request->filled('date_from') && !$request->filled('date_to')) {
+                $query->whereDate('date', '>=', now()->subMonth()->toDateString());
+            }
+
+            return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('schedule_info', function ($row) {
                     $first = $row->schedules->first();
@@ -37,11 +65,11 @@ class TeachingJournalController extends Controller
                     $teacherName = $first->teacher ? $first->teacher->name : '-';
                     $sessions = $row->schedules->pluck('lessonHour.session')->unique()->implode(', ');
                     return '<div>
-                    <strong>' . $subjectName . '</strong><br>
-                    <small>Kelas: ' . $className . '</small><br>
-                    <small>Guru: ' . $teacherName . '</small><br>
-                    <small>Jam: ' . $sessions . '</small>
-                </div>';
+                        <strong>' . $subjectName . '</strong><br>
+                        <small>Kelas: ' . $className . '</small><br>
+                        <small>Guru: ' . $teacherName . '</small><br>
+                        <small>Jam: ' . $sessions . '</small>
+                    </div>';
                 })
                 ->addColumn('date_info', function ($row) {
                     return '<div>
@@ -98,19 +126,16 @@ class TeachingJournalController extends Controller
             'materials.students',
         ])->findOrFail($id);
 
-        // Ambil jadwal pertama (semua jadwal dalam blok memiliki subject, classroom, teacher yang sama)
         $firstSchedule = $journal->schedules->first();
         if (!$firstSchedule) {
             return redirect()->route('teaching-journals.index')
                 ->with('error', 'Jurnal ini tidak memiliki jadwal yang valid.');
         }
 
-        // Ambil siswa dari kelas yang sama
         $classroomStudents = Student::where('classroom_id', $firstSchedule->classroom_id)
             ->orderBy('name')
             ->get();
 
-        // Filter siswa tidak hadir (izin, sakit, alpa)
         $filteredAttendances = $journal->attendances->filter(function ($attendance) {
             return in_array($attendance->status, ['izin', 'sakit', 'alpa']);
         });
@@ -123,9 +148,6 @@ class TeachingJournalController extends Controller
         ));
     }
 
-    /**
-     * Menambahkan siswa tidak hadir (izin, sakit, alpa) ke jurnal
-     */
     public function addAbsentStudent(Request $request, $journalId)
     {
         $request->validate([
@@ -135,17 +157,14 @@ class TeachingJournalController extends Controller
 
         $journal = TeachingJournal::findOrFail($journalId);
 
-        // Cek apakah siswa sudah ada di jurnal ini
         $existing = StudentAttendance::where('teaching_journal_id', $journal->id)
             ->where('student_id', $request->student_id)
             ->first();
 
         if ($existing) {
-            // Jika sudah ada, update statusnya
             $existing->update(['status' => $request->status]);
             $message = 'Status siswa berhasil diperbarui menjadi ' . $request->status;
         } else {
-            // Tambah baru
             StudentAttendance::create([
                 'teaching_journal_id' => $journal->id,
                 'student_id' => $request->student_id,
@@ -160,7 +179,6 @@ class TeachingJournalController extends Controller
         ]);
     }
 
-    // ========== METHOD UNTUK EDIT MATERI & REFLEKSI ==========
     public function updateMaterial(Request $request, $id)
     {
         $request->validate([
@@ -185,7 +203,6 @@ class TeachingJournalController extends Controller
         return redirect()->back()->with('success', 'Refleksi berhasil diperbarui!');
     }
 
-    // ========== METHOD UNTUK EDIT PRESENSI SISWA ==========
     public function updateAttendanceStatus(Request $request)
     {
         $request->validate([
@@ -221,7 +238,6 @@ class TeachingJournalController extends Controller
         return '<span class="badge bg-' . ($statusMap[$status] ?? 'secondary') . '">' . ($labelMap[$status] ?? $status) . '</span>';
     }
 
-    // ========== METHOD UNTUK MATERI ==========
     public function storeMaterial(Request $request, $journalId)
     {
         $request->validate([
