@@ -14,6 +14,7 @@ use App\Http\Controllers\Web\Admin\RoleAttendanceTimeController;
 use App\Http\Controllers\Web\Admin\StudentAttendanceReportController;
 use App\Http\Controllers\Web\Admin\StudentsController;
 use App\Http\Controllers\Web\Admin\SubjectController;
+use App\Http\Controllers\Web\Admin\TeacherAttendanceReportController;
 use App\Http\Controllers\Web\Admin\TeachingJournalController;
 use App\Http\Controllers\Web\Admin\TeachingScheduleController;
 use App\Http\Controllers\Web\Admin\UserAttendanceController;
@@ -178,6 +179,11 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/attendance-report', [StudentAttendanceReportController::class, 'index'])->name('attendance-report.index');
         Route::get('/attendance-report/detail', [StudentAttendanceReportController::class, 'getStudentDetail'])->name('attendance-report.detail');
+
+        Route::get('/teacher-attendance-report', [TeacherAttendanceReportController::class, 'index'])->name('teacher-attendance-report.index');
+        Route::get('/teacher-attendance-report/data', [TeacherAttendanceReportController::class, 'getData'])->name('teacher-attendance-report.data');
+        Route::get('/teacher-attendance-report/chart', [TeacherAttendanceReportController::class, 'getChartData'])->name('teacher-attendance-report.chart');
+        Route::get('/teacher-attendance-report/export', [TeacherAttendanceReportController::class, 'export'])->name('teacher-attendance-report.export');
     });
 
     // Route Khusus Teacher
