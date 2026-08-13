@@ -94,7 +94,12 @@ class StudentAttendanceReportController extends Controller
             ], 422);
         }
 
-        $attendances = StudentAttendance::with(['student', 'journal.teachingSchedule.subject'])
+        // 🔥 Perbaikan: Load relasi journal.schedules.subject
+        $attendances = StudentAttendance::with([
+            'student',
+            'journal.schedules.subject',
+            'journal.schedules.classroom'
+        ])
             ->where('student_id', $studentId)
             ->whereHas('student', function ($query) use ($classroomId) {
                 $query->where('classroom_id', $classroomId);
@@ -109,14 +114,19 @@ class StudentAttendanceReportController extends Controller
         $studentName = $attendances->first()?->student->name ?? '';
 
         $data = $attendances->map(function ($att) {
+            // 🔥 Ambil subject dari schedules pertama
+            $journal = $att->journal;
+            $firstSchedule = $journal->schedules->first();
+            $subjectName = $firstSchedule?->subject?->name ?? '-';
+
             return [
-                'date' => $att->journal->date->format('d/m/Y'),
-                'day' => $att->journal->day_name,
+                'date' => $journal->date->format('d/m/Y'),
+                'day' => $journal->day_name,
                 'status' => $att->status,
                 'status_label' => $att->status_label,
                 'status_badge' => $att->status_badge,
-                'subject' => $att->journal->teachingSchedule->subject->name ?? '-',
-                'material' => $att->journal->material ?? '-',
+                'subject' => $subjectName,
+                'material' => $journal->material ?? '-',
             ];
         });
 
