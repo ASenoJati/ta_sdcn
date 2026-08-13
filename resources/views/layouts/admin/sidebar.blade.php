@@ -101,6 +101,12 @@
                         <p>Data Presensi Guru</p>
                     </a>
                 </li>
+                <li class="nav-item">
+    <a href="{{ route('teacher-attendance-report.index') }}" class="nav-link {{ request()->routeIs('teacher-attendance-report.*') ? 'active' : '' }}">
+        <i class="nav-icon bi bi-person-badge"></i>
+        <p>Rekap Presensi Guru</p>
+    </a>
+</li>
 
                 <li class="nav-header">USER</li>
                 <li class="nav-item">
