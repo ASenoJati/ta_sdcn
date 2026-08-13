@@ -49,14 +49,38 @@ class StudentAttendanceReportController extends Controller
             foreach ($students as $student) {
                 $studentAttendances = $grouped->get($student->id, collect());
 
+                // 🔥 PERBAIKAN: Hitung per hari unik untuk status tidak hadir
+                $absentRecords = $studentAttendances->whereIn('status', ['izin', 'sakit', 'alpa']);
+
+                // Kelompokkan berdasarkan tanggal (unik per hari)
+                $groupedByDate = $absentRecords->groupBy(function ($att) {
+                    return $att->journal->date->toDateString();
+                });
+
+                // Inisialisasi counter
+                $izinCount = 0;
+                $sakitCount = 0;
+                $alpaCount = 0;
+
+                foreach ($groupedByDate as $date => $items) {
+                    // Prioritas status: alpa > sakit > izin
+                    if ($items->contains('status', 'alpa')) {
+                        $alpaCount++;
+                    } elseif ($items->contains('status', 'sakit')) {
+                        $sakitCount++;
+                    } else {
+                        $izinCount++;
+                    }
+                }
+
                 $reportData[] = [
                     'student_id' => $student->id,
                     'nis' => $student->nis,
                     'name' => $student->name,
-                    'izin' => $studentAttendances->where('status', 'izin')->count(),
-                    'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                    'alpa' => $studentAttendances->where('status', 'alpa')->count(),
-                    'total_tidak_hadir' => $studentAttendances->whereIn('status', ['izin', 'sakit', 'alpa'])->count(),
+                    'izin' => $izinCount,
+                    'sakit' => $sakitCount,
+                    'alpa' => $alpaCount,
+                    'total_tidak_hadir' => $izinCount + $sakitCount + $alpaCount,
                 ];
             }
 
@@ -77,9 +101,6 @@ class StudentAttendanceReportController extends Controller
         ));
     }
 
-    /**
-     * Get student attendance detail for modal
-     */
     public function getStudentDetail(Request $request)
     {
         $studentId = $request->input('student_id');
@@ -94,12 +115,7 @@ class StudentAttendanceReportController extends Controller
             ], 422);
         }
 
-        // 🔥 Perbaikan: Load relasi journal.schedules.subject
-        $attendances = StudentAttendance::with([
-            'student',
-            'journal.schedules.subject',
-            'journal.schedules.classroom'
-        ])
+        $attendances = StudentAttendance::with(['student', 'journal.teachingSchedule.subject'])
             ->where('student_id', $studentId)
             ->whereHas('student', function ($query) use ($classroomId) {
                 $query->where('classroom_id', $classroomId);
@@ -114,19 +130,14 @@ class StudentAttendanceReportController extends Controller
         $studentName = $attendances->first()?->student->name ?? '';
 
         $data = $attendances->map(function ($att) {
-            // 🔥 Ambil subject dari schedules pertama
-            $journal = $att->journal;
-            $firstSchedule = $journal->schedules->first();
-            $subjectName = $firstSchedule?->subject?->name ?? '-';
-
             return [
-                'date' => $journal->date->format('d/m/Y'),
-                'day' => $journal->day_name,
+                'date' => $att->journal->date->format('d/m/Y'),
+                'day' => $att->journal->day_name,
                 'status' => $att->status,
                 'status_label' => $att->status_label,
                 'status_badge' => $att->status_badge,
-                'subject' => $subjectName,
-                'material' => $journal->material ?? '-',
+                'subject' => $att->journal->teachingSchedule->subject->name ?? '-',
+                'material' => $att->journal->material ?? '-',
             ];
         });
 
