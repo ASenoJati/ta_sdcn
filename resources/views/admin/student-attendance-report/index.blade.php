@@ -129,11 +129,20 @@
                         </div>
                     @endif
                 </div>
-                <div class="card-footer">
-                    <button type="button" class="btn btn-secondary" onclick="window.print()">
-                        <i class="bi bi-printer me-1"></i> Cetak
-                    </button>
-                </div>
+               <div class="card-footer d-flex justify-content-between align-items-center">
+    {{-- <div>
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> Cetak
+        </button>
+    </div> --}}
+    <div>
+        @if(count($reportData) > 0)
+            <button type="button" class="btn btn-success" id="btnExportExcel">
+                <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+            </button>
+        @endif
+    </div>
+</div>
             </div>
         @else
             <div class="card mt-3">
@@ -333,5 +342,96 @@
             });
         });
     });
+
+    // Export Excel
+// Export Excel
+$('#btnExportExcel').on('click', function(e) {
+    e.preventDefault();
+
+    const params = new URLSearchParams({
+        classroom_id: $('#classroom_id').val(),
+        start_date: $('#start_date').val(),
+        end_date: $('#end_date').val()
+    });
+
+    Swal.fire({
+        title: 'Mengekspor...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        url: "{{ route('attendance-report.export') }}?" + params.toString(),
+        type: "GET",
+        xhrFields: {
+            responseType: 'blob'
+        },
+        success: function(response, status, xhr) {
+            Swal.close();
+
+            const contentType = xhr.getResponseHeader('Content-Type');
+            if (contentType && contentType.includes('application/json')) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    try {
+                        const json = JSON.parse(reader.result);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: json.message || 'Tidak ada data untuk diekspor.'
+                        });
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan saat mengekspor data.'
+                        });
+                    }
+                };
+                reader.readAsText(response);
+                return;
+            }
+
+            const contentDisposition = xhr.getResponseHeader('Content-Disposition');
+            let filename = 'Rekap_Presensi_Siswa.xlsx';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="(.+?)"/);
+                if (match) filename = match[1];
+            }
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(response);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'File Excel berhasil diunduh.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        },
+        error: function(xhr) {
+            Swal.close();
+            let errorMsg = 'Terjadi kesalahan saat mengekspor data.';
+            try {
+                const json = JSON.parse(xhr.responseText);
+                if (json.message) errorMsg = json.message;
+            } catch (e) {}
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: errorMsg
+            });
+        }
+    });
+});
 </script>
 @endpush
