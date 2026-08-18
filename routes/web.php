@@ -179,6 +179,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/attendance-report', [StudentAttendanceReportController::class, 'index'])->name('attendance-report.index');
         Route::get('/attendance-report/detail', [StudentAttendanceReportController::class, 'getStudentDetail'])->name('attendance-report.detail');
+        Route::get('/admin/attendance-report/export', [StudentAttendanceReportController::class, 'export'])
+            ->name('attendance-report.export');
 
         Route::get('/teacher-attendance-report', [TeacherAttendanceReportController::class, 'index'])->name('teacher-attendance-report.index');
         Route::get('/teacher-attendance-report/data', [TeacherAttendanceReportController::class, 'getData'])->name('teacher-attendance-report.data');
