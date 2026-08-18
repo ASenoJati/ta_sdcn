@@ -84,15 +84,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('role-attendance-times.index') }}" class="nav-link {{ request()->routeIs('role-attendance-times.*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-clock"></i>
-                        <p>Setting Waktu Presensi</p>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="{{ route('attendance-setting.index') }}" class="nav-link {{ request()->routeIs('attendance-setting.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-clock-history"></i>
                         <p>Waktu Presensi</p>
+                    </a>
+                </li>
+                 <li class="nav-item">
+                    <a href="{{ route('role-attendance-times.index') }}" class="nav-link {{ request()->routeIs('role-attendance-times.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-clock"></i>
+                        <p>Setting Waktu Presensi</p>
                     </a>
                 </li>
                 <li class="nav-item">
