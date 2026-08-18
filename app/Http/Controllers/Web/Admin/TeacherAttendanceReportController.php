@@ -89,7 +89,6 @@ class TeacherAttendanceReportController extends Controller
         $presentData = [];
         $lateData = [];
 
-        // Sort by date
         $sortedDates = $grouped->keys()->sort();
 
         foreach ($sortedDates as $date) {
@@ -123,7 +122,6 @@ class TeacherAttendanceReportController extends Controller
         $attendances = $query->get()->groupBy('user_id');
 
         if ($attendances->isEmpty()) {
-            // Return response untuk SweetAlert2 di frontend
             return response()->json([
                 'success' => false,
                 'message' => 'Tidak ada data presensi untuk rentang tanggal yang dipilih.'
@@ -146,7 +144,6 @@ class TeacherAttendanceReportController extends Controller
             ];
         }
 
-        // Nama file dengan tanggal
         $startDateFormatted = Carbon::parse($startDate)->format('d-m-Y');
         $endDateFormatted = Carbon::parse($endDate)->format('d-m-Y');
         $fileName = 'Rekap_Presensi_Guru_' . $startDateFormatted . '_sampai_' . $endDateFormatted . '_' . now()->format('Ymd_His') . '.xlsx';
