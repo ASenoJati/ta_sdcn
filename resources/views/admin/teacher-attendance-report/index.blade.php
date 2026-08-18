@@ -277,100 +277,117 @@ $(document).ready(function() {
     });
 
     // Export Excel dengan validasi data kosong
-    $('#exportExcel').on('click', function(e) {
-        e.preventDefault();
+   // Export Excel dengan validasi data kosong
+$('#exportExcel').on('click', function(e) {
+    e.preventDefault();
 
-        const params = new URLSearchParams({
-            user_id: $('#filter_teacher').val(),
-            start_date: $('#start_date').val(),
-            end_date: $('#end_date').val()
+    const params = new URLSearchParams({
+        user_id: $('#filter_teacher').val(),
+        start_date: $('#start_date').val(),
+        end_date: $('#end_date').val()
+    });
+
+    // Tampilkan loading
+    Swal.fire({
+        title: 'Mengekspor...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // 🔥 Gunakan fetch untuk menangani response dengan lebih baik
+    fetch("{{ route('teacher-attendance-report.export') }}?" + params.toString(), {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, */*'
+        }
+    })
+    .then(response => {
+        // Cek apakah response OK
+        if (!response.ok) {
+            // Jika status 404 atau 422, coba parse JSON error
+            return response.json().then(data => {
+                throw { status: response.status, data: data };
+            });
+        }
+
+        // Cek content type
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+            // Jika response JSON (kemungkinan error)
+            return response.json().then(data => {
+                if (!data.success) {
+                    throw { status: 200, data: data };
+                }
+                return data;
+            });
+        }
+
+        // Response berupa file Excel (blob)
+        return response.blob().then(blob => {
+            return { blob: blob, headers: response.headers };
         });
+    })
+    .then(result => {
+        Swal.close();
 
-        // Tampilkan loading
+        // Jika hasil berupa blob (file)
+        if (result.blob) {
+            const contentDisposition = result.headers.get('Content-Disposition');
+            let filename = 'Rekap_Presensi_Guru.xlsx';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="(.+?)"/);
+                if (match) filename = match[1];
+            }
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(result.blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'File Excel berhasil diunduh.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        // Jika hasil berupa data JSON (success)
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: result.message || 'Data berhasil diekspor.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    })
+    .catch(error => {
+        Swal.close();
+        
+        let errorMsg = 'Terjadi kesalahan saat mengekspor data.';
+        if (error.data && error.data.message) {
+            errorMsg = error.data.message;
+        } else if (error.message) {
+            errorMsg = error.message;
+        }
+
         Swal.fire({
-            title: 'Mengekspor...',
-            text: 'Mohon tunggu sebentar',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        $.ajax({
-            url: "{{ route('teacher-attendance-report.export') }}?" + params.toString(),
-            type: "GET",
-            xhrFields: {
-                responseType: 'blob'
-            },
-            success: function(response, status, xhr) {
-                Swal.close();
-
-                // Cek apakah response berupa blob error (JSON)
-                const contentType = xhr.getResponseHeader('Content-Type');
-                if (contentType && contentType.includes('application/json')) {
-                    // JSON error
-                    const reader = new FileReader();
-                    reader.onload = function() {
-                        try {
-                            const json = JSON.parse(reader.result);
-                            if (!json.success) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal!',
-                                    text: json.message || 'Tidak ada data untuk diekspor.'
-                                });
-                            }
-                        } catch (e) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal!',
-                                text: 'Terjadi kesalahan saat mengekspor data.'
-                            });
-                        }
-                    };
-                    reader.readAsText(response);
-                    return;
-                }
-
-                // Jika response berupa file Excel
-                const contentDisposition = xhr.getResponseHeader('Content-Disposition');
-                let filename = 'Rekap_Presensi_Guru.xlsx';
-                if (contentDisposition) {
-                    const match = contentDisposition.match(/filename="(.+?)"/);
-                    if (match) filename = match[1];
-                }
-
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(response);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'File Excel berhasil diunduh.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            error: function(xhr) {
-                Swal.close();
-                let errorMsg = 'Terjadi kesalahan saat mengekspor data.';
-                try {
-                    const json = JSON.parse(xhr.responseText);
-                    if (json.message) errorMsg = json.message;
-                } catch (e) {}
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: errorMsg
-                });
-            }
+            icon: 'error',
+            title: 'Gagal!',
+            text: errorMsg
         });
     });
+});
 
     // Initialize
     initTable();

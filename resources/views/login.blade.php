@@ -78,8 +78,8 @@
                 </div>
 
                 <p class="mb-0 text-center">
-                    <a href="{{ url('/forgot-password') }}" class="text-muted">
-                        <i class="bi bi-question-circle me-1"></i> Lupa password?
+                    <a href="{{ url('/forgot-password') }}" class="text-muted text-decoration-none">
+                        Lupa password <i class="bi bi-question-circle me-1"></i>
                     </a>
                 </p>
             </div>
