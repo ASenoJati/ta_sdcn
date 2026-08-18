@@ -174,7 +174,7 @@
         </div>
 
         <!-- Card Manajemen Materi -->
-        <div class="row mt-4">
+        <div class="row mt-4 d-none">
             <div class="col-12">
                 <div class="card card-warning">
                     <div class="card-header">

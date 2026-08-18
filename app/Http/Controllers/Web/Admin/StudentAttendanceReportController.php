@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\StudentAttendance;
-use App\Exports\StudentAttendanceReportExport; // ✅ perbaiki path
+use App\Exports\StudentAttendanceReportExport;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 
 class StudentAttendanceReportController extends Controller
 {
@@ -107,7 +108,13 @@ class StudentAttendanceReportController extends Controller
             ], 422);
         }
 
-        $attendances = StudentAttendance::with(['student', 'journal.teachingSchedule.subject'])
+        // 🔥 PERBAIKAN: Load relasi teachingSchedule dan schedules
+        $attendances = StudentAttendance::with([
+            'student',
+            'journal.teachingSchedule.subject',
+            'journal.schedules.subject', // many-to-many
+            'journal.schedules.lessonHour'
+        ])
             ->where('student_id', $studentId)
             ->whereHas('student', function ($query) use ($classroomId) {
                 $query->where('classroom_id', $classroomId);
@@ -122,14 +129,37 @@ class StudentAttendanceReportController extends Controller
         $studentName = $attendances->first()?->student->name ?? '';
 
         $data = $attendances->map(function ($att) {
+            $journal = $att->journal;
+
+            // 🔥 Ambil subject dari teachingSchedule (single) atau schedules (many-to-many)
+            $subjectName = '-';
+            if ($journal->teachingSchedule && $journal->teachingSchedule->subject) {
+                $subjectName = $journal->teachingSchedule->subject->name;
+            } elseif ($journal->schedules && $journal->schedules->isNotEmpty()) {
+                // Ambil subject dari schedule pertama (semua schedule dalam blok punya subject yang sama)
+                $firstSchedule = $journal->schedules->first();
+                if ($firstSchedule && $firstSchedule->subject) {
+                    $subjectName = $firstSchedule->subject->name;
+                }
+            }
+
+            // 🔥 Ambil jam pelajaran dari schedules
+            $sessionInfo = '';
+            if ($journal->schedules && $journal->schedules->isNotEmpty()) {
+                $sessions = $journal->schedules->pluck('lessonHour.session')->unique()->implode(', ');
+                if ($sessions) {
+                    $sessionInfo = ' (Jam ' . $sessions . ')';
+                }
+            }
+
             return [
-                'date' => $att->journal->date->format('d/m/Y'),
-                'day' => $att->journal->day_name,
+                'date' => $journal->date->format('d/m/Y'),
+                'day' => $journal->day_name,
                 'status' => $att->status,
                 'status_label' => $att->status_label,
                 'status_badge' => $att->status_badge,
-                'subject' => $att->journal->teachingSchedule->subject->name ?? '-',
-                'material' => $att->journal->material ?? '-',
+                'subject' => $subjectName . $sessionInfo,
+                'material' => $journal->material ?? '-',
             ];
         });
 
@@ -141,9 +171,6 @@ class StudentAttendanceReportController extends Controller
         ]);
     }
 
-    /**
-     * Export Excel
-     */
     public function export(Request $request)
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
@@ -165,7 +192,6 @@ class StudentAttendanceReportController extends Controller
             ], 404);
         }
 
-        // Ambil data sama seperti di index
         $students = Student::where('classroom_id', $classroomId)
             ->orderBy('name')
             ->get();
@@ -225,7 +251,6 @@ class StudentAttendanceReportController extends Controller
             ], 404);
         }
 
-        // Nama file
         $startFormatted = Carbon::parse($startDate)->format('d-m-Y');
         $endFormatted = Carbon::parse($endDate)->format('d-m-Y');
         $fileName = 'Rekap_Presensi_' . $classroom->name . '_' . $startFormatted . '_sampai_' . $endFormatted . '_' . now()->format('Ymd_His') . '.xlsx';

@@ -130,11 +130,6 @@
                     @endif
                 </div>
                <div class="card-footer d-flex justify-content-between align-items-center">
-    {{-- <div>
-        <button type="button" class="btn btn-secondary" onclick="window.print()">
-            <i class="bi bi-printer me-1"></i> Cetak
-        </button>
-    </div> --}}
     <div>
         @if(count($reportData) > 0)
             <button type="button" class="btn btn-success" id="btnExportExcel">
