@@ -65,7 +65,7 @@
         </div>
 
         <!-- Grafik -->
-        <div class="row mt-4">
+        <div class="row mt-4 d-none">
             <div class="col-12">
                 <div class="card card-success card-outline">
                     <div class="card-header">
